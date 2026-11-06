@@ -1,1371 +1,1050 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>全國公辦都市更新標案與新聞追蹤戰情室 | National Urban Renewal Tracker</title>
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google Fonts: Inter & Noto Sans TC -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <!-- Font Awesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        fontSize: {
-          'xs': ['0.875rem', { lineHeight: '1.35rem' }],
-          'sm': ['1rem', { lineHeight: '1.5rem' }],
-          'base': ['1.125rem', { lineHeight: '1.75rem' }],
-          'lg': ['1.25rem', { lineHeight: '1.75rem' }],
-          'xl': ['1.5rem', { lineHeight: '2rem' }],
-          '2xl': ['1.875rem', { lineHeight: '2.25rem' }],
-          '3xl': ['2.25rem', { lineHeight: '2.5rem' }],
-        },
-        extend: {
-          fontFamily: {
-            sans: ['Inter', 'Noto Sans TC', 'sans-serif'],
-            mono: ['JetBrains Mono', 'monospace'],
-          },
-          colors: {
-            slate: {
-              850: '#151f32',
-              925: '#0b1120',
-            }
-          }
-        }
-      }
-    }
-  </script>
-
-  <style>
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.08); }
-    ::-webkit-scrollbar-thumb { background: rgba(100, 116, 139, 0.45); border-radius: 9999px; }
-    ::-webkit-scrollbar-thumb:hover { background: rgba(100, 116, 139, 0.7); }
-    .text-\[10px\] { font-size: 0.75rem !important; line-height: 1.15rem !important; }
-    .text-\[11px\] { font-size: 0.84375rem !important; line-height: 1.25rem !important; }
-    .drawer-backdrop { backdrop-filter: blur(4px); }
-    .pulse-dot { animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-    @keyframes pulse-ring {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.45; transform: scale(1.18); }
-    }
-  </style>
-</head>
-<body class="bg-slate-50 dark:bg-slate-925 text-slate-800 dark:text-slate-100 font-sans text-base antialiased selection:bg-blue-500 selection:text-white transition-colors duration-200 min-h-screen flex flex-col">
-
-  <!-- 頂部導航列 (Header) -->
-  <header class="sticky top-0 z-30 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-4 lg:px-8 py-3">
-    <div class="max-w-[1600px] mx-auto flex flex-wrap items-center justify-between gap-4">
-      <div class="flex items-center gap-3.5">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/25">
-          <i class="fa-solid fa-city text-lg"></i>
+<!-- 頂部導航列 -->
+<header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+            <div class="bg-blue-600 text-white p-2.5 rounded-xl shadow-md">
+                <i class="fa-solid fa-city text-xl"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold tracking-tight text-slate-900">全國公辦都市更新標案與新聞追蹤戰情室</h1>
+                <p class="text-xs text-slate-500" id="current-date-display">系統同步基準日載入中...</p>
+            </div>
         </div>
-        <div>
-          <div class="flex items-center gap-2.5">
-            <h1 class="text-lg md:text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-              全國公辦都更標案與新聞追蹤戰情室
-            </h1>
-            <span id="syncStatusBadge" onclick="openGasArchitectureModal()" class="cursor-pointer hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 transition">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 pulse-dot"></span>
-              <span id="syncStatusText">單機即時倒數模式 (點擊綁定雲端自動爬蟲)</span>
-            </span>
-          </div>
-          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            系統今日日期：<span id="liveTodayDateText" class="font-mono font-semibold text-blue-600 dark:text-blue-400">載入中...</span> ｜ 最後同步：<span id="lastSyncTimeText" class="font-mono text-slate-700 dark:text-slate-300">內建全國基準庫 + 本機記憶</span>
-          </p>
+        
+        <div class="flex items-center space-x-3">
+            <button onclick="syncFromCloudNow()" id="sync-btn" class="inline-flex items-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg shadow transition">
+                <i class="fa-solid fa-rotate mr-2"></i> 立即同步最新資料
+            </button>
+            <button onclick="openGasModal()" class="inline-flex items-center px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium rounded-lg transition border border-slate-300">
+                <i class="fa-solid fa-cloud-arrow-down mr-2 text-blue-600"></i> 雲端自動爬蟲設定 (GAS)
+            </button>
+            <button onclick="openAddModal()" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg shadow transition">
+                <i class="fa-solid fa-plus mr-2"></i> 手動新增標案
+            </button>
+            <button onclick="exportJSON()" class="p-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition border border-slate-300" title="匯出 JSON 備份">
+                <i class="fa-solid fa-download"></i>
+            </button>
+            <label class="p-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition border border-slate-300 cursor-pointer" title="匯入 JSON 還原">
+                <i class="fa-solid fa-upload"></i>
+                <input type="file" id="import-file" class="hidden" onchange="importJSON(event)">
+            </label>
         </div>
-      </div>
-
-      <div class="flex items-center gap-2 sm:gap-2.5 flex-wrap">
-        <button onclick="syncFromCloudNow()" id="syncNowBtn" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm shadow-emerald-500/20 transition" title="立即從已綁定的 Google 試算表拉取最新標案與新聞">
-          <i id="syncNowIcon" class="fa-solid fa-rotate"></i>
-          <span>立即同步最新資料</span>
-        </button>
-
-        <button onclick="openGasArchitectureModal()" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/75 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition">
-          <i class="fa-brands fa-google-drive"></i>
-          <span>雲端自動爬蟲設定 (GAS)</span>
-        </button>
-
-        <button onclick="exportToCSV()" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 transition" title="匯出目前標案為 Excel CSV">
-          <i class="fa-solid fa-file-csv text-emerald-600 dark:text-emerald-400"></i>
-          <span class="hidden xl:inline">匯出 CSV</span>
-        </button>
-
-        <button onclick="exportToJSON()" class="inline-flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 transition" title="匯出完整 JSON 備份檔">
-          <i class="fa-solid fa-download text-blue-500"></i>
-          <span class="hidden xl:inline">備份</span>
-        </button>
-        <label class="cursor-pointer inline-flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 transition" title="匯入 JSON 備份檔">
-          <i class="fa-solid fa-upload text-amber-500"></i>
-          <span class="hidden xl:inline">還原</span>
-          <input type="file" accept=".json" onchange="importFromJSON(event)" class="hidden">
-        </label>
-
-        <button onclick="openAddTenderModal()" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white shadow-sm shadow-blue-500/20 transition">
-          <i class="fa-solid fa-plus"></i>
-          <span>新增標案</span>
-        </button>
-
-        <button onclick="toggleTheme()" id="themeToggleBtn" class="w-9 h-9 rounded-lg flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 transition" title="切換深淺色主題">
-          <i class="fa-solid fa-sun hidden dark:inline text-amber-400"></i>
-          <i class="fa-solid fa-moon inline dark:hidden text-slate-700"></i>
-        </button>
-      </div>
     </div>
-  </header>
+</header>
 
-  <!-- 主內容容器 -->
-  <main class="flex-1 max-w-[1600px] w-full mx-auto px-4 lg:px-8 py-6 space-y-6">
+<!-- 主要內容區 -->
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full space-y-6">
 
-    <!-- 1. 頂部關鍵指標卡片 (KPI Summary Cards) -->
-    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="kpiCardsContainer">
-      <!-- 由 JS 動態渲染 -->
-    </section>
+    <!-- 頂部關鍵指標 KPI 卡片 -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-5">
+        <!-- 卡片 1 -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">招商中 / 公開閱覽</p>
+                <h3 class="text-3xl font-extrabold text-slate-900 mt-1" id="kpi-active-count">0</h3>
+                <p class="text-xs text-emerald-600 mt-1 font-medium"><i class="fa-solid fa-arrow-trend-up mr-1"></i> 積極備標中案件</p>
+            </div>
+            <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-xl">
+                <i class="fa-solid fa-bullhorn"></i>
+            </div>
+        </div>
+        <!-- 卡片 2 -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">近期釋疑 / 補充公告</p>
+                <h3 class="text-3xl font-extrabold text-slate-900 mt-1" id="kpi-update-count">0</h3>
+                <p class="text-xs text-amber-600 mt-1 font-medium"><i class="fa-solid fa-triangle-exclamation mr-1"></i> 須留意條件變更</p>
+            </div>
+            <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center text-xl">
+                <i class="fa-solid fa-file-pen"></i>
+            </div>
+        </div>
+        <!-- 卡片 3 -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex items-center justify-between cursor-pointer hover:border-blue-500 transition" id="kpi-deadline-card">
+            <div>
+                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">近期截標倒數預警</p>
+                <h3 class="text-xl font-bold text-rose-600 mt-1 truncate max-w-[180px]" id="kpi-nearest-deadline">無</h3>
+                <p class="text-xs text-slate-500 mt-1 font-medium" id="kpi-nearest-days">計算中...</p>
+            </div>
+            <div class="w-12 h-12 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center text-xl flex-shrink-0">
+                <i class="fa-solid fa-clock"></i>
+            </div>
+        </div>
+        <!-- 卡片 4 -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">追蹤總案件數</p>
+                <h3 class="text-3xl font-extrabold text-slate-900 mt-1" id="kpi-total-count">0</h3>
+                <p class="text-xs text-slate-500 mt-1 font-medium">全國公辦都更資料庫</p>
+            </div>
+            <div class="w-12 h-12 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center text-xl">
+                <i class="fa-solid fa-database"></i>
+            </div>
+        </div>
+    </div>
 
-    <!-- 2. 多維度快速篩選列 (Filter & Search Bar) -->
-    <section class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm space-y-4">
-      <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800/80 pb-3.5">
-        <div class="flex items-center gap-1.5 flex-wrap" id="cityPillsContainer">
-          <!-- JS 動態生成縣市按鈕 -->
+    <!-- 篩選與搜尋工具列 -->
+    <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-4">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <!-- 縣市快速標籤 -->
+            <div class="flex flex-wrap items-center gap-2" id="region-filter-tabs">
+                <button onclick="setRegionFilter('ALL')" class="region-tab px-3.5 py-1.5 rounded-lg text-sm font-medium bg-blue-600 text-white shadow-sm transition">全國總覽</button>
+                <button onclick="setRegionFilter('臺北市')" class="region-tab px-3.5 py-1.5 rounded-lg text-sm font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 transition">臺北市</button>
+                <button onclick="setRegionFilter('新北市')" class="region-tab px-3.5 py-1.5 rounded-lg text-sm font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 transition">新北市</button>
+                <button onclick="setRegionFilter('桃園市')" class="region-tab px-3.5 py-1.5 rounded-lg text-sm font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 transition">桃園市</button>
+                <button onclick="setRegionFilter('臺中市')" class="region-tab px-3.5 py-1.5 rounded-lg text-sm font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 transition">臺中市</button>
+                <button onclick="setRegionFilter('高雄市')" class="region-tab px-3.5 py-1.5 rounded-lg text-sm font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 transition">高雄市</button>
+                <button onclick="setRegionFilter('其他')" class="region-tab px-3.5 py-1.5 rounded-lg text-sm font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 transition">其他縣市</button>
+            </div>
+
+            <!-- 關鍵字搜尋 -->
+            <div class="relative w-full lg:w-80">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </span>
+                <input type="text" id="search-input" oninput="handleSearch()" placeholder="搜尋案名、案號、機關..." class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition">
+            </div>
         </div>
 
-        <div class="flex items-center gap-2">
-          <button onclick="toggleStarFilter()" id="starFilterBtn" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/70 text-slate-600 dark:text-slate-300 hover:border-amber-400 transition">
-            <i class="fa-solid fa-star text-amber-400"></i>
-            <span>重點追蹤</span>
-            <span id="starCountBadge" class="px-1.5 py-0.2 rounded-full text-[11px] bg-slate-200 dark:bg-slate-700 font-mono">0</span>
-          </button>
-
-          <div class="inline-flex rounded-lg p-0.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-            <button onclick="switchViewMode('table')" id="viewBtnTable" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm transition">
-              <i class="fa-solid fa-table-list"></i>
-              <span>結構化列表</span>
-            </button>
-            <button onclick="switchViewMode('kanban')" id="viewBtnKanban" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition">
-              <i class="fa-solid fa-columns"></i>
-              <span>階段看板</span>
-            </button>
-          </div>
+        <!-- 次要篩選下拉選單 -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-slate-100">
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">主辦機關</label>
+                <select id="filter-agency" onchange="applyFilters()" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="ALL">全部主辦機關</option>
+                    <option value="國家住宅及都市更新中心">國家住宅及都市更新中心</option>
+                    <option value="臺北市都市更新處">臺北市都市更新處</option>
+                    <option value="新北市住宅及都市更新中心">新北市住宅及都市更新中心</option>
+                    <option value="桃園市政府住宅發展處">桃園市政府住宅發展處</option>
+                    <option value="高雄市政府都市發展局">高雄市政府都市發展局</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">案件目前狀態</label>
+                <select id="filter-stage" onchange="applyFilters()" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="ALL">全部狀態</option>
+                    <option value="公開評選實施者公告">正式招商中 (實施者/出資人)</option>
+                    <option value="公開閱覽">公開閱覽</option>
+                    <option value="變更或補充公告">變更或補充公告 (釋疑)</option>
+                    <option value="評選會委員名單公告">評選會委員名單公告</option>
+                    <option value="評選結果公告">評選結果 (決標/流標)</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">排序方式</label>
+                <select id="sort-select" onchange="applyFilters()" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="deadline-asc">截標日期（由近到遠）</option>
+                    <option value="date-desc">公告日期（由新到舊）</option>
+                    <option value="title-asc">案件名稱（筆劃/字首）</option>
+                </select>
+            </div>
         </div>
-      </div>
+    </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 items-center">
-        <div class="lg:col-span-4 relative">
-          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-          <input type="text" id="searchInput" oninput="applyFilters()" placeholder="搜尋案號(UR115018)、地段、案名、最優申請人或新聞..." class="w-full pl-9 pr-8 py-2 rounded-xl text-xs bg-slate-50 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50">
-          <button onclick="clearSearch()" id="clearSearchBtn" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-            <i class="fa-solid fa-circle-xmark text-xs"></i>
-          </button>
-        </div>
-
-        <div class="lg:col-span-3">
-          <select id="stageSelect" onchange="applyFilters()" class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50">
-            <option value="ALL">📊 所有公告階段 (國土署標準分類)</option>
-            <option value="公開評選招商中">🟢 公開評選招商中 (實施者/出資人)</option>
-            <option value="變更或補充公告">🟠 變更或補充公告 (釋疑/延期)</option>
-            <option value="公開閱覽">🔵 公開閱覽 / 委員名單預告</option>
-            <option value="評選結果公告">🔴 評選結果公告 (決標/流標)</option>
-          </select>
-        </div>
-
-        <div class="lg:col-span-3">
-          <select id="agencySelect" onchange="applyFilters()" class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50">
-            <option value="ALL">🏛️ 所有主辦機關 (全國)</option>
-            <option value="國家住宅及都市更新中心">國家住宅及都市更新中心</option>
-            <option value="臺北市住宅及都市更新中心">臺北市住宅及都市更新中心</option>
-            <option value="新北市住宅及都市更新中心">新北市住宅及都市更新中心</option>
-            <option value="地方政府局處">各縣市政府局處 (都發局/財政局等)</option>
-          </select>
-        </div>
-
-        <div class="lg:col-span-2 flex items-center gap-2">
-          <select id="sortSelect" onchange="applyFilters()" class="flex-1 px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50">
-            <option value="publishDesc">最新公告日優先</option>
-            <option value="deadlineAsc">近期截標優先</option>
-            <option value="areaDesc">基地面積由大到小</option>
-            <option value="investDesc">預估投資額由高到低</option>
-          </select>
-          <button onclick="resetAllFilters()" class="px-2.5 py-2 rounded-xl text-xs bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition" title="重設所有篩選">
-            <i class="fa-solid fa-rotate-left"></i>
-          </button>
-        </div>
-      </div>
-    </section>
-
-    <!-- 3. 主工作區 -->
-    <section id="mainWorkspaceSection">
-      <div id="tableViewContainer" class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-        <div class="px-5 py-3.5 border-b border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 bg-slate-50/50 dark:bg-slate-800/30">
-          <div class="flex items-center gap-2">
-            <span class="text-xs font-semibold text-slate-700 dark:text-slate-200">全國公辦都更標案追蹤總表</span>
-            <span id="resultCountText" class="px-2 py-0.5 rounded-full text-[11px] font-mono bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">共 11 筆案件</span>
-          </div>
-          <div class="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-3">
-            <span><i class="fa-solid fa-hand-pointer mr-1 text-blue-500"></i>點擊任一案件列可展開右側「基地資格、歷次釋疑、評選委員、專屬新聞」深度抽屜</span>
-          </div>
+    <!-- 標案清單表格區 -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+            <div class="flex items-center space-x-2">
+                <h2 class="font-bold text-slate-800 text-base">公辦都更標案清單</h2>
+                <span class="px-2.5 py-0.5 bg-blue-100 text-blue-700 text-xs font-bold rounded-full" id="table-count-badge">0 筆</span>
+            </div>
+            <div class="text-xs text-slate-500">
+                點擊任一案件可檢視完整生命週期與新聞情報
+            </div>
         </div>
 
         <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse">
-            <thead>
-              <tr class="border-b border-slate-200 dark:border-slate-800 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 bg-slate-50/80 dark:bg-slate-900/60">
-                <th class="py-3 pl-4 pr-2 w-10 text-center">追蹤</th>
-                <th class="py-3 px-3 min-w-[130px]">案號 / 行政區</th>
-                <th class="py-3 px-3 min-w-[270px]">案件名稱與專案別名</th>
-                <th class="py-3 px-3 min-w-[170px]">主辦機關 / 實施方式</th>
-                <th class="py-3 px-3 min-w-[175px]">基地規模 / 公地占比</th>
-                <th class="py-3 px-3 min-w-[165px]">目前公告狀態 / 次數</th>
-                <th class="py-3 px-3 min-w-[155px]">關鍵時程 / 截標倒數</th>
-                <th class="py-3 pl-3 pr-5 min-w-[280px]">📰 案件專屬最新新聞與情報摘要</th>
-              </tr>
-            </thead>
-            <tbody id="tenderTableBody" class="divide-y divide-slate-200/70 dark:divide-slate-800/80 text-xs">
-              <!-- JS 動態渲染 -->
-            </tbody>
-          </table>
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-slate-100/70 border-b border-slate-200 text-xs font-bold text-slate-700 uppercase tracking-wider">
+                        <th class="py-3.5 px-4">收藏</th>
+                        <th class="py-3.5 px-4">案號 / 縣市</th>
+                        <th class="py-3.5 px-4">案件名稱與核心地段</th>
+                        <th class="py-3.5 px-4">主辦機關 / 方式</th>
+                        <th class="py-3.5 px-4">基地規模與權屬</th>
+                        <th class="py-3.5 px-4">目前狀態</th>
+                        <th class="py-3.5 px-4">截標日期與倒數</th>
+                        <th class="py-3.5 px-4">最新新聞動態摘要</th>
+                    </tr>
+                </thead>
+                <tbody id="tenders-table-body" class="divide-y divide-slate-200 text-sm">
+                    <!-- 動態渲染注入 -->
+                </tbody>
+            </table>
         </div>
-      </div>
 
-      <div id="kanbanViewContainer" class="hidden grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        <!-- JS 動態渲染 -->
-      </div>
-    </section>
-
-    <!-- 4. 全國新聞牆 -->
-    <section class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm">
-      <div class="flex flex-wrap items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-100 dark:border-slate-800">
-        <div class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500">
-            <i class="fa-solid fa-newspaper"></i>
-          </div>
-          <div>
-            <h2 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              全國公辦都更・案件關聯新聞與市場動態牆
-              <span class="px-2 py-0.5 text-[10px] font-mono rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">Google News RSS 歸戶</span>
-            </h2>
-            <p class="text-xs text-slate-500 dark:text-slate-400">彙整北中南各案招商說明會花絮、預估總銷、共負比調整及最優申請人簽約報導</p>
-          </div>
+        <!-- 無資料提示 -->
+        <div id="no-data-notice" class="hidden py-16 text-center">
+            <div class="text-slate-400 text-4xl mb-3"><i class="fa-solid fa-folder-open"></i></div>
+            <p class="text-slate-600 font-medium">沒有找到符合條件的公辦都更案件</p>
+            <p class="text-xs text-slate-400 mt-1">請嘗試切換篩選條件或清除關鍵字搜尋</p>
         </div>
-      </div>
-      <div id="globalNewsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <!-- JS 動態渲染 -->
-      </div>
-    </section>
-  </main>
-
-  <!-- 5. 右側滑出式抽屜 -->
-  <div id="detailDrawerBackdrop" onclick="closeDetailDrawer()" class="fixed inset-0 bg-slate-950/60 drawer-backdrop z-40 hidden opacity-0 transition-opacity duration-300"></div>
-  <aside id="detailDrawer" class="fixed top-0 right-0 bottom-0 w-full max-w-3xl bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 z-50 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col shadow-2xl">
-    <div class="p-5 border-b border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/90">
-      <div class="flex items-start justify-between gap-4">
-        <div class="space-y-1.5 flex-1">
-          <div class="flex items-center gap-2 flex-wrap" id="drawerTopBadges"></div>
-          <h2 id="drawerTitle" class="text-base md:text-lg font-bold text-slate-900 dark:text-white leading-snug"></h2>
-          <p id="drawerAgencyInfo" class="text-xs text-slate-500 dark:text-slate-400"></p>
-        </div>
-        <button onclick="closeDetailDrawer()" class="w-8 h-8 rounded-lg bg-slate-200/70 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300 transition shrink-0">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-      </div>
-      <div class="flex flex-wrap items-center gap-2 mt-4 pt-3 border-t border-slate-200/70 dark:border-slate-800" id="drawerActionLinks"></div>
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 mt-4 bg-slate-200/70 dark:bg-slate-800/90 p-1 rounded-xl">
-        <button onclick="switchDrawerTab('news')" id="drawerTabBtn_news" class="drawer-tab-btn py-2 px-2.5 rounded-lg text-xs font-semibold transition flex items-center justify-center gap-1.5">
-          <i class="fa-solid fa-newspaper text-amber-500"></i>
-          <span>專屬新聞情報</span>
-          <span id="drawerNewsCountBadge" class="px-1.5 py-0.2 text-[10px] rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-300 font-mono">0</span>
-        </button>
-        <button onclick="switchDrawerTab('specs')" id="drawerTabBtn_specs" class="drawer-tab-btn py-2 px-2.5 rounded-lg text-xs font-semibold transition flex items-center justify-center gap-1.5">
-          <i class="fa-solid fa-ruler-combined text-blue-500"></i>
-          <span>基地與資格門檻</span>
-        </button>
-        <button onclick="switchDrawerTab('timeline')" id="drawerTabBtn_timeline" class="drawer-tab-btn py-2 px-2.5 rounded-lg text-xs font-semibold transition flex items-center justify-center gap-1.5">
-          <i class="fa-solid fa-clock-rotate-left text-orange-500"></i>
-          <span>歷次公告與釋疑</span>
-        </button>
-        <button onclick="switchDrawerTab('committee')" id="drawerTabBtn_committee" class="drawer-tab-btn py-2 px-2.5 rounded-lg text-xs font-semibold transition flex items-center justify-center gap-1.5">
-          <i class="fa-solid fa-users-viewfinder text-purple-500"></i>
-          <span>評選委員與結果</span>
-        </button>
-      </div>
     </div>
-    <div class="flex-1 overflow-y-auto p-5 space-y-6" id="drawerBodyContent"></div>
-  </aside>
+</main>
 
-  <!-- 6. GAS 設定 Modal -->
-  <div id="gasModalBackdrop" class="fixed inset-0 bg-slate-950/70 drawer-backdrop z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-3xl w-full max-h-[85vh] flex flex-col shadow-2xl overflow-hidden">
-      <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800/50">
-        <div class="flex items-center gap-2.5">
-          <i class="fa-brands fa-google-drive text-indigo-500 text-lg"></i>
-          <h3 class="text-base font-bold text-slate-900 dark:text-white">Google 雲端自動更新設定 (GAS)</h3>
+<!-- 案件詳情滑出抽屜 (Slide-over Drawer) -->
+<div id="detail-drawer" class="fixed inset-0 z-50 overflow-hidden hidden">
+    <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-xs transition-opacity" onclick="closeDetailDrawer()"></div>
+    <div class="absolute inset-y-0 right-0 max-w-full flex pl-10">
+        <div class="w-screen max-w-2xl bg-white shadow-2xl flex flex-col">
+            <!-- 抽屜標頭 -->
+            <div class="px-6 py-6 bg-slate-900 text-white flex items-start justify-between flex-shrink-0">
+                <div>
+                    <div class="flex items-center space-x-2 mb-2">
+                        <span id="drawer-case-id" class="px-2.5 py-0.5 bg-blue-500 text-white text-xs font-bold rounded">UR000000</span>
+                        <span id="drawer-city-badge" class="px-2.5 py-0.5 bg-slate-700 text-slate-200 text-xs font-semibold rounded">臺北市</span>
+                    </div>
+                    <h2 id="drawer-title" class="text-lg font-bold leading-snug">載入中...</h2>
+                </div>
+                <button onclick="closeDetailDrawer()" class="text-slate-400 hover:text-white p-2 rounded-lg transition">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <!-- 抽屜導航分頁 -->
+            <div class="flex border-b border-slate-200 bg-slate-50 px-6 flex-shrink-0 text-sm font-medium">
+                <button onclick="switchDrawerTab('info')" class="drawer-tab py-3.5 px-4 border-b-2 border-blue-600 text-blue-600 font-semibold" data-tab="info">基地與資格門檻</button>
+                <button onclick="switchDrawerTab('timeline')" class="drawer-tab py-3.5 px-4 border-b-2 border-transparent text-slate-500 hover:text-slate-700" data-tab="timeline">歷次公告時間軸</button>
+                <button onclick="switchDrawerTab('committee')" class="drawer-tab py-3.5 px-4 border-b-2 border-transparent text-slate-500 hover:text-slate-700" data-tab="committee">評選委員名單</button>
+                <button onclick="switchDrawerTab('news')" class="drawer-tab py-3.5 px-4 border-b-2 border-transparent text-slate-500 hover:text-slate-700" data-tab="news">📰 專屬新聞情報</button>
+            </div>
+
+            <!-- 抽屜內容滾動區 -->
+            <div class="flex-grow overflow-y-auto p-6 space-y-6 text-sm" id="drawer-content-body">
+                <!-- 動態渲染注入 -->
+            </div>
+
+            <!-- 抽屜底部動作列 -->
+            <div class="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between flex-shrink-0">
+                <a id="drawer-official-link" href="#" target="_blank" class="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-700">
+                    <i class="fa-solid fa-arrow-up-right-from-square mr-1.5"></i> 前往國土署官方公告原址
+                </a>
+                <button onclick="closeDetailDrawer()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium rounded-lg text-sm transition">
+                    關閉面板
+                </button>
+            </div>
         </div>
-        <button onclick="closeGasArchitectureModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-          <i class="fa-solid fa-xmark text-lg"></i>
-        </button>
-      </div>
-      <div class="p-6 overflow-y-auto space-y-4 text-xs leading-relaxed text-slate-600 dark:text-slate-300">
-        <div class="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 space-y-3">
-          <h4 class="text-sm font-bold text-emerald-900 dark:text-emerald-200">綁定您的 Google Apps Script 網頁應用程式網址</h4>
-          <p>將部署後的 Web App 網址貼在下方，單機 GitHub 網頁即可自動連線試算表同步：</p>
-          <div class="flex flex-col sm:flex-row gap-2">
-            <input type="url" id="gasWebAppUrlInput" placeholder="https://script.google.com/macros/s/xxxxxx/exec" class="flex-1 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-emerald-500/40 text-slate-800 dark:text-slate-100 font-mono text-xs focus:outline-none">
-            <button onclick="saveGasWebAppUrl()" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold shrink-0 transition">儲存並同步</button>
-          </div>
-        </div>
-      </div>
-      <div class="px-6 py-3.5 border-t border-slate-200 dark:border-slate-800 flex justify-end bg-slate-50 dark:bg-slate-800/40">
-        <button onclick="closeGasArchitectureModal()" class="px-4 py-2 rounded-lg text-xs font-semibold bg-blue-600 text-white">關閉</button>
-      </div>
     </div>
-  </div>
+</div>
 
-  <!-- 7. 新增標案 Modal -->
-  <div id="addTenderModalBackdrop" class="fixed inset-0 bg-slate-950/70 drawer-backdrop z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
-      <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
-        <h3 class="text-base font-bold text-slate-900 dark:text-white"><i class="fa-solid fa-folder-plus text-blue-500 mr-2"></i>新增標案</h3>
-        <button onclick="closeAddTenderModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
-      </div>
-      <form onsubmit="handleAddTenderSubmit(event)" class="p-6 overflow-y-auto space-y-4 text-xs">
-        <div class="grid grid-cols-2 gap-3">
-          <div><label class="block font-semibold mb-1">案號 *</label><input type="text" id="newCaseId" required placeholder="UR115025" class="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"></div>
-          <div><label class="font-semibold mb-1 block">別名 *</label><input type="text" id="newAlias" required placeholder="信義段案" class="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"></div>
+<!-- 手動新增標案 Modal -->
+<div id="add-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+    <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-xs" onclick="closeAddModal()"></div>
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg z-10 overflow-hidden">
+        <div class="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
+            <h3 class="font-bold text-lg">新增公辦都更標案</h3>
+            <button onclick="closeAddModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
         </div>
-        <div class="grid grid-cols-2 gap-3">
-          <div><label class="font-semibold mb-1 block">縣市 *</label><select id="newCity" class="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"><option value="臺北市">臺北市</option><option value="新北市">新北市</option><option value="桃園市">桃園市</option><option value="高雄市">高雄市</option><option value="臺中市">臺中市</option><option value="臺南市">臺南市</option><option value="基隆市">基隆市</option><option value="新竹市">新竹市</option></select></div>
-          <div><label class="font-semibold mb-1 block">行政區 *</label><input type="text" id="newDistrict" required placeholder="信義區" class="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"></div>
+        <div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto text-sm">
+            <div>
+                <label class="block font-semibold text-slate-700 mb-1">標案案號</label>
+                <input type="text" id="add-case-id" placeholder="例如: UR115099" class="w-full px-3 py-2 border border-slate-300 rounded-xl">
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">縣市</label>
+                    <select id="add-city" class="w-full px-3 py-2 border border-slate-300 rounded-xl">
+                        <option value="臺北市">臺北市</option>
+                        <option value="新北市">新北市</option>
+                        <option value="桃園市">桃園市</option>
+                        <option value="臺中市">臺中市</option>
+                        <option value="臺南市">臺南市</option>
+                        <option value="高雄市">高雄市</option>
+                        <option value="新竹市">新竹市</option>
+                        <option value="基隆市">基隆市</option>
+                        <option value="其他">其他縣市</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">主辦機關</label>
+                    <input type="text" id="add-agency" placeholder="例如: 國家住都中心" class="w-full px-3 py-2 border border-slate-300 rounded-xl">
+                </div>
+            </div>
+            <div>
+                <label class="block font-semibold text-slate-700 mb-1">案件名稱</label>
+                <textarea id="add-title" rows="2" placeholder="完整案名..." class="w-full px-3 py-2 border border-slate-300 rounded-xl"></textarea>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">目前狀態</label>
+                    <select id="add-stage" class="w-full px-3 py-2 border border-slate-300 rounded-xl">
+                        <option value="公開評選實施者公告">正式招商中</option>
+                        <option value="公開閱覽">公開閱覽</option>
+                        <option value="變更或補充公告">變更或補充公告 (釋疑)</option>
+                        <option value="評選結果公告">評選結果公告</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">截標日期</label>
+                    <input type="date" id="add-deadline" class="w-full px-3 py-2 border border-slate-300 rounded-xl">
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">基地面積 (坪)</label>
+                    <input type="text" id="add-area" placeholder="例如: 1,500 坪" class="w-full px-3 py-2 border border-slate-300 rounded-xl">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">預估投資金額</label>
+                    <input type="text" id="add-investment" placeholder="例如: 35 億元" class="w-full px-3 py-2 border border-slate-300 rounded-xl">
+                </div>
+            </div>
         </div>
-        <div><label class="font-semibold mb-1 block">完整標案名稱 *</label><input type="text" id="newTitle" required placeholder="完整的國土署公開評選案名..." class="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"></div>
-        <div class="grid grid-cols-2 gap-3">
-          <div><label class="font-semibold mb-1 block">主辦機關 *</label><input type="text" id="newAgency" required value="國家住宅及都市更新中心" class="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"></div>
-          <div><label class="font-semibold mb-1 block">階段 *</label><select id="newStage" class="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"><option value="公開評選招商中">公開評選招商中</option><option value="變更或補充公告">變更或補充公告</option><option value="公開閱覽">公開閱覽</option><option value="評選結果公告">評選結果公告</option></select></div>
+        <div class="px-6 py-4 bg-slate-50 border-t border-slate-200 flex justify-end space-x-3">
+            <button onclick="closeAddModal()" class="px-4 py-2 bg-slate-200 text-slate-700 rounded-xl font-medium">取消</button>
+            <button onclick="saveNewTender()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium shadow">儲存標案</button>
         </div>
-        <div class="grid grid-cols-3 gap-3">
-          <div><label class="font-semibold mb-1 block">基地面積(㎡)</label><input type="number" step="0.01" id="newAreaSqm" required value="3500" class="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"></div>
-          <div><label class="font-semibold mb-1 block">公地占比%</label><input type="number" step="0.1" id="newPublicRatio" value="70" class="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"></div>
-          <div><label class="font-semibold mb-1 block">預估投資(億)</label><input type="number" step="0.1" id="newEstInvest" value="25" class="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"></div>
-        </div>
-        <div class="grid grid-cols-2 gap-3">
-          <div><label class="font-semibold mb-1 block">開始日</label><input type="date" id="newStartDate" value="2026-11-05" class="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"></div>
-          <div><label class="font-semibold mb-1 block">截止日</label><input type="date" id="newEndDate" value="2027-02-28" class="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700"></div>
-        </div>
-        <div class="pt-3 border-t flex justify-end gap-2">
-          <button type="button" onclick="closeAddTenderModal()" class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">取消</button>
-          <button type="submit" class="px-4 py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-500">儲存</button>
-        </div>
-      </form>
     </div>
-  </div>
+</div>
 
-  <!-- Toast -->
-  <div id="toastNotification" class="fixed bottom-5 right-5 z-50 hidden items-center gap-2.5 px-4 py-3 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-semibold shadow-xl border border-slate-700 dark:border-slate-200 transition-all">
-    <i class="fa-solid fa-circle-check text-emerald-400 dark:text-emerald-600"></i>
-    <span id="toastMessageText">操作成功</span>
-  </div>
+<!-- Google Apps Script 設定說明 Modal -->
+<div id="gas-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+    <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-xs" onclick="closeGasModal()"></div>
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl z-10 overflow-hidden flex flex-col max-h-[85vh]">
+        <div class="px-6 py-4 bg-slate-900 text-white flex items-center justify-between flex-shrink-0">
+            <h3 class="font-bold text-lg"><i class="fa-solid fa-cloud-arrow-down mr-2 text-blue-500"></i> Google Apps Script (GAS) 雲端自動爬蟲設定</h3>
+            <button onclick="closeGasModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+        </div>
+        <div class="p-6 space-y-6 overflow-y-auto text-sm flex-grow">
+            <div>
+                <label class="block font-bold text-slate-800 mb-1">步驟一：綁定你的 Google Apps Script 網頁應用程式網址</label>
+                <p class="text-xs text-slate-500 mb-2">將你在 Google 試算表部署好的 Web App 執行網址貼於下方，網頁即可一鍵讀取雲端最新全國公辦都更資料。</p>
+                <div class="flex gap-2">
+                    <input type="text" id="gas-url-input" placeholder="https://script.google.com/macros/s/.../exec" class="flex-grow px-3 py-2 border border-slate-300 rounded-xl font-mono text-xs">
+                    <button onclick="saveGasUrl()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl flex-shrink-0">儲存並測試同步</button>
+                </div>
+            </div>
 
-  <script>
-    function getLiveTodayDate() {
-      const now = new Date();
-      return new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
-    }
-    function formatLiveRocDateString() {
-      const now = new Date();
-      const rocYear = now.getFullYear() - 1911;
-      const mm = String(now.getMonth() + 1).padStart(2, '0');
-      const dd = String(now.getDate()).padStart(2, '0');
-      return `${rocYear}.${mm}.${dd} (${now.getFullYear()}-${mm}-${dd})`;
-    }
+            <div class="border-t border-slate-200 pt-4">
+                <div class="flex items-center justify-between mb-2">
+                    <label class="block font-bold text-slate-800">步驟二：一鍵複製後端 Code.gs 完整爬蟲程式碼</label>
+                    <button onclick="copyCodeSnippet()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-medium border border-slate-300">
+                        <i class="fa-regular fa-copy mr-1"></i> 複製程式碼
+                    </button>
+                </div>
+                <p class="text-xs text-slate-500 mb-2">請將此段程式碼貼入你的 Google 試算表 Apps Script 編輯器中（內建資料庫 ID 與前 5 頁自動抓取邏輯）。</p>
+                <textarea id="gas-code-textarea" readonly rows="8" class="w-full p-3 bg-slate-900 text-emerald-400 font-mono text-xs rounded-xl focus:outline-none select-all">const SPREADSHEET_ID = "1Et_Y0d2qE-E5mzmv_B_wudnJZnrYMDRWd4j8nPRbxxc";
 
-    // 內建全國 11 大真實公辦都更精華標案 (含信義兒福B2、高雄青年高分社、新店安德段等)
-    const INITIAL_TENDERS_DATA = [
-      {
-        caseId: "UR115018",
-        city: "新北市",
-        district: "新店區",
-        alias: "新店安德段案",
-        title: "「新北市新店區安德段20地號等28筆土地都市更新事業」公開徵求出資人公開評選案",
-        agency: "國家住宅及都市更新中心",
-        agencyGroup: "國家住宅及都市更新中心",
-        legalBasis: "都市更新條例第12條第1項第2款",
-        method: "權利變換",
-        stage: "公開評選招商中",
-        stageDetail: "公開評選實施者公告 (第1次)",
-        announceCount: 1,
-        publishDateRoc: "115.11.02 08:00",
-        deadlineRoc: "116.01.20 17:00",
-        publishDateIso: "2026-11-02",
-        deadlineIso: "2027-01-20",
-        areaSqm: 6530.53,
-        zoning: "第三種住宅區及道路用地",
-        publicLandRatio: 64.54,
-        privateLandRatio: 35.46,
-        estInvestBillion: 32.5,
-        starred: true,
-        locationDesc: "新北市新店區安德街(12公尺)北側，西臨安德街130巷、東臨安德街116巷。",
-        durationReq: "依核定之事業計畫、權利變換計畫、出資契約所列期程辦理。",
-        bondAmount: "新臺幣 3,000 萬元",
-        docFee: "新臺幣 8,000 元",
-        qualification: { general: "合作聯盟或單一公司投標", financial: "實收資本額2億以上", technical: "住宅建築開發實績總樓地板面積達3萬平方公尺以上" },
-        scoringWeights: [{ item: "出資計畫書", weight: 80 }, { item: "簡報與答詢", weight: 5 }, { item: "共同負擔比率承諾", weight: 15 }],
-        contactInfo: { person: "國家住都中心", phone: "(02) 2100-6300", email: "ur@hurc.org.tw", address: "臺北市中山區" },
-        nlmaUrl: "https://twur.nlma.gov.tw/zh/merchant/announcement/view/194?mc_announcement_item_id=1325",
-        agencyUrl: "https://www.hurc.org.tw/",
-        clarificationHighlight: "基地近安坑輕軌，公有土地佔比達 64.54%。",
-        winner: null, qualifiedBidders: [], committeeNote: "審查中",
-        committeeInternal: [], committeeExternal: [],
-        lifecycle: [{ count: "第1次", dateAdded: "115.11.02", type: "公開評選實施者公告", period: "115.11.02 ~ 116.01.20", note: "正式公告招商中。" }],
-        searchTokens: ["\"新店安德段\"", "\"國家住都中心\""],
-        news: [{ id: "N_101", date: "2026-11-03", media: "經濟日報", title: "國家住都中心新店安德段公辦都更招商 預估投資規模逾32億", summary: "國家住都中心宣布正式公告招商新店安德段公辦都更案，基地面積約1,975坪。", url: "https://news.google.com/search?q=新店安德段公辦都更" }]
-      },
-      {
-        caseId: "UR114027",
-        city: "臺北市",
-        district: "信義區",
-        alias: "信義兒福B2案",
-        title: "「臺北市信義區犁和段二小段1地號等59筆暨三興段二小段507地號等14筆土地都市更新事業」公開徵求出資人招商案",
-        agency: "國家住宅及都市更新中心",
-        agencyGroup: "國家住宅及都市更新中心",
-        legalBasis: "都市更新條例第12條第1項第2款",
-        method: "權利變換",
-        stage: "公開評選招商中",
-        stageDetail: "公開評選出資者公告 (第1次變更公告)",
-        announceCount: 1,
-        publishDateRoc: "115.08.27 08:00",
-        deadlineRoc: "115.11.12 17:00",
-        publishDateIso: "2026-08-27",
-        deadlineIso: "2026-11-12",
-        areaSqm: 22780.00,
-        zoning: "第三種住宅區(特)、道路用地",
-        publicLandRatio: 85.50,
-        privateLandRatio: 14.50,
-        estInvestBillion: 285.0,
-        starred: true,
-        locationDesc: "臺北市信義區信安街、吳興街220巷周邊。",
-        durationReq: "依核定計畫辦理。",
-        bondAmount: "新臺幣 1 億元",
-        docFee: "新臺幣 10,000 元",
-        qualification: { general: "單一公司或合作聯盟，保險業得專案投資", financial: "實收資本額20億以上，淨值50億以上", technical: "累計建築總樓地板面積不低於6萬平方公尺" },
-        scoringWeights: [{ item: "出資計畫書", weight: 80 }, { item: "共同負擔比率承諾", weight: 15 }, { item: "簡報", weight: 5 }],
-        contactInfo: { person: "國家住都中心", phone: "(02) 2100-6300", email: "service@hurc.org.tw", address: "臺北市中山區" },
-        nlmaUrl: "https://twur.nlma.gov.tw/zh/merchant/announcement/view/164?mc_announcement_item_id=1232",
-        agencyUrl: "https://www.hurc.org.tw/renewalAnnouncement",
-        clarificationHighlight: "信義兒福系列最大旗艦基地（近6,891坪），預估投資高達 285 億元。",
-        winner: null, qualifiedBidders: [], committeeNote: "委員名單已公告",
-        committeeInternal: [], committeeExternal: [],
-        lifecycle: [{ count: "第1次", dateAdded: "115.08.27", type: "變更或補充公告(第1次)", period: "115.08.27 ~ 115.11.12", note: "變更公告，截止日115.11.12。" }],
-        searchTokens: ["\"信義兒福B2\"", "\"信義兒福公辦都更\""],
-        news: [{ id: "N_164_1", date: "2026-07-09", media: "工商時報", title: "全台最大公辦都更案登場！國家住都中心信義兒福B2招商 預估吸資285億", summary: "信義兒福B2基地廣達6,891坪，預估投資總額達285億元。", url: "https://news.google.com/search?q=信義兒福B2" }]
-      },
-      {
-        caseId: "UR115017-KH",
-        city: "高雄市",
-        district: "新興區",
-        alias: "青年高分社暨陸服社案",
-        title: "「高雄市新興區新興段三小段234地號等15筆土地(青年高分社)暨大統段二小段309地號等5筆土地(陸軍服務社)都市更新事業」公開徵求出資人公開評選案",
-        agency: "國家住宅及都市更新中心",
-        agencyGroup: "國家住宅及都市更新中心",
-        legalBasis: "都市更新條例第12條第1項第2款",
-        method: "權利變換",
-        stage: "公開評選招商中",
-        stageDetail: "公開評選出資者公告 (第1次)",
-        announceCount: 1,
-        publishDateRoc: "115.09.21 08:00",
-        deadlineRoc: "115.11.30 17:00",
-        publishDateIso: "2026-09-21",
-        deadlineIso: "2026-11-30",
-        areaSqm: 5600.0,
-        zoning: "第五種商業區、第四種商業區",
-        publicLandRatio: 98.2,
-        privateLandRatio: 1.8,
-        estInvestBillion: 59.0,
-        starred: true,
-        locationDesc: "青年高分社基地（近美麗島站）與陸軍服務社基地。",
-        durationReq: "依契約規定辦理。",
-        bondAmount: "新臺幣 5,000 萬元",
-        docFee: "新臺幣 8,000 元",
-        qualification: { general: "股份有限公司", financial: "資本額4億以上，淨值13億以上", technical: "開發實績2.5萬平方公尺以上" },
-        scoringWeights: [{ item: "出資計畫書", weight: 80 }, { item: "共同負擔比率", weight: 15 }, { item: "簡報", weight: 5 }],
-        contactInfo: { person: "國家住都中心", phone: "(02) 2100-6300", email: "purchase@hurc.org.tw", address: "臺北市中山區" },
-        nlmaUrl: "https://twur.nlma.gov.tw/zh/merchant/announcement/view/193?mc_announcement_item_id=1268",
-        agencyUrl: "https://www.hurc.org.tw/",
-        clarificationHighlight: "高雄核心罕見雙基地跨區權變公辦都更案，預估投資 59 億元。",
-        winner: null, qualifiedBidders: [], committeeNote: "評選委員已公告",
-        committeeInternal: [], committeeExternal: [],
-        lifecycle: [{ count: "第1次", dateAdded: "115.09.21", type: "公開評選出資者公告", period: "115.09.21 ~ 115.11.30", note: "正式公告招商。" }],
-        searchTokens: ["\"青年高分社\"", "\"高雄 59億都更\""],
-        news: [{ id: "N_KH_193", date: "2026-09-21", media: "經濟日報", title: "高雄兩精華地啟動都更 國家住都中心59億打造商辦、住宅", summary: "國家住都中心啟動高雄市青年高暨陸服社案公辦都更招商，預估投資59億元。", url: "https://money.udn.com" }]
-      },
-      {
-        caseId: "UR115017",
-        city: "新北市",
-        district: "新莊區",
-        alias: "新莊副都心段案",
-        title: "「新北市新莊區副都心段五小段1地號等2筆土地都市更新事業」公開評選實施者招商案",
-        agency: "新北市住宅及都市更新中心",
-        agencyGroup: "新北市住宅及都市更新中心",
-        legalBasis: "都市更新條例第12條",
-        method: "權利變換",
-        stage: "公開評選招商中",
-        stageDetail: "公開評選實施者公告 (第1次)",
-        announceCount: 1,
-        publishDateRoc: "115.10.29 08:00",
-        deadlineRoc: "116.02.25 17:00",
-        publishDateIso: "2026-10-29",
-        deadlineIso: "2027-02-25",
-        areaSqm: 4210.80,
-        zoning: "商業區 (副都心專用區)",
-        publicLandRatio: 82.10,
-        privateLandRatio: 17.90,
-        estInvestBillion: 48.0,
-        starred: true,
-        locationDesc: "新北市新莊區副都心站商圈核心商業區。",
-        durationReq: "依規定辦理。",
-        bondAmount: "新臺幣 4,000 萬元",
-        docFee: "新臺幣 10,000 元",
-        qualification: { general: "股份有限公司", financial: "資本額5億以上", technical: "商業開發實績4萬平方公尺以上" },
-        scoringWeights: [{ item: "規劃與財務計畫", weight: 75 }, { item: "共同負擔比率", weight: 20 }, { item: "簡報", weight: 5 }],
-        contactInfo: { person: "新北住都中心", phone: "(02) 2957-1999", email: "contact@nbturc.org.tw", address: "新北市板橋區" },
-        nlmaUrl: "https://twur.nlma.gov.tw/zh/merchant/announcement/0",
-        agencyUrl: "https://www.nbturc.org.tw/",
-        clarificationHighlight: "副都心核心商業區稀有大面積公有土地招商。",
-        winner: null, qualifiedBidders: [], committeeNote: "已公告",
-        committeeInternal: [], committeeExternal: [],
-        lifecycle: [{ count: "第1次", dateAdded: "115.10.29", type: "公開評選實施者公告", period: "115.10.29 ~ 116.02.25", note: "招商中。" }],
-        searchTokens: ["\"新莊副都心\""],
-        news: [{ id: "N_102", date: "2026-10-30", media: "工商時報", title: "新北住都中心推動新莊副都心公辦都更 釋出4210平方公尺商業地", summary: "新北住都中心推出新莊副都心精華地段公辦都更案。", url: "https://news.google.com" }]
-      },
-      {
-        caseId: "UR115016",
-        city: "新北市",
-        district: "三重區",
-        alias: "三重永安段案",
-        title: "「新北市三重區永安段1401地號等6筆土地都市更新事業」公開評選實施者招商案",
-        agency: "新北市住宅及都市更新中心",
-        agencyGroup: "新北市住宅及都市更新中心",
-        legalBasis: "都市更新條例第12條",
-        method: "權利變換",
-        stage: "公開評選招商中",
-        stageDetail: "公開評選實施者公告 (第1次)",
-        announceCount: 1,
-        publishDateRoc: "115.10.29 08:00",
-        deadlineRoc: "116.01.27 17:00",
-        publishDateIso: "2026-10-29",
-        deadlineIso: "2027-01-27",
-        areaSqm: 3120.40,
-        zoning: "住宅區",
-        publicLandRatio: 58.30,
-        privateLandRatio: 41.70,
-        estInvestBillion: 21.5,
-        starred: false,
-        locationDesc: "近捷運三重站與重陽橋商圈。",
-        durationReq: "依規定。",
-        bondAmount: "新臺幣 2,000 萬元",
-        docFee: "新臺幣 5,000 元",
-        qualification: { general: "股份有限公司", financial: "資本額2億以上", technical: "住宅開發實績" },
-        scoringWeights: [{ item: "計畫", weight: 70 }, { item: "共同負擔比率", weight: 25 }, { item: "簡報", weight: 5 }],
-        contactInfo: { person: "新北住都中心", phone: "(02) 2957-1999", email: "service@nbturc.org.tw", address: "新北市板橋區" },
-        nlmaUrl: "https://twur.nlma.gov.tw/zh/merchant/announcement/0",
-        agencyUrl: "https://www.nbturc.org.tw/",
-        clarificationHighlight: "三重水岸生活圈優質更新單元。",
-        winner: null, qualifiedBidders: [], committeeNote: "審查中",
-        committeeInternal: [], committeeExternal: [],
-        lifecycle: [{ count: "第1次", dateAdded: "115.10.29", type: "公開評選實施者公告", period: "115.10.29 ~ 116.01.27", note: "招商中。" }],
-        searchTokens: ["\"三重永安段\""],
-        news: []
-      },
-      {
-        caseId: "UR115015",
-        city: "臺北市",
-        district: "大安區",
-        alias: "大安龍泉案",
-        title: "「臺北市大安區龍泉段二小段662地號等11筆土地（大安龍泉案）公辦都市更新」徵求出資人公開評選案",
-        agency: "國家住宅及都市更新中心",
-        agencyGroup: "國家住宅及都市更新中心",
-        legalBasis: "都市更新條例第12條",
-        method: "權利變換",
-        stage: "公開閱覽",
-        stageDetail: "公開閱覽 (第1次)",
-        announceCount: 1,
-        publishDateRoc: "115.10.16 08:00",
-        deadlineRoc: "115.10.23 17:00",
-        publishDateIso: "2026-10-16",
-        deadlineIso: "2026-10-23",
-        areaSqm: 2890.15,
-        zoning: "第三種住宅區",
-        publicLandRatio: 72.40,
-        privateLandRatio: 27.60,
-        estInvestBillion: 28.0,
-        starred: true,
-        locationDesc: "師大商圈古亭捷運生活圈。",
-        durationReq: "依規定。",
-        bondAmount: "新臺幣 2,500 萬元",
-        docFee: "新臺幣 5,000 元",
-        qualification: { general: "股份有限公司", financial: "資本額2億以上", technical: "住宅實績" },
-        scoringWeights: [{ item: "出資計畫", weight: 80 }, { item: "共同負擔", weight: 15 }, { item: "簡報", weight: 5 }],
-        contactInfo: { person: "國家住都中心", phone: "(02) 2100-6300", email: "ur@hurc.org.tw", address: "臺北市中山區" },
-        nlmaUrl: "https://twur.nlma.gov.tw/zh/merchant/announcement/0",
-        agencyUrl: "https://www.hurc.org.tw/",
-        clarificationHighlight: "師大商圈精華公辦都更，公開閱覽完畢。",
-        winner: null, qualifiedBidders: [], committeeNote: "委員名單已於115.10.15公告",
-        committeeInternal: [], committeeExternal: [],
-        lifecycle: [{ count: "第1次", dateAdded: "115.10.16", type: "公開閱覽", period: "115.10.16 ~ 115.10.23", note: "公開閱覽完成。" }],
-        searchTokens: ["\"大安龍泉案\""],
-        news: [{ id: "N_103", date: "2026-10-17", media: "自由時報", title: "住都中心大安龍泉案公辦都更公開閱覽 師大商圈精華地段備受矚目", summary: "國家住都中心在大安區推出龍泉段公辦都更案。", url: "https://news.google.com" }]
-      },
-      {
-        caseId: "UR114011",
-        city: "臺北市",
-        district: "信義區",
-        alias: "信義雅祥案",
-        title: "「臺北市信義區雅祥段三小段182地號等16筆土地（信義雅祥案）公辦都市更新」公開徵求出資人招商案",
-        agency: "國家住宅及都市更新中心",
-        agencyGroup: "國家住宅及都市更新中心",
-        legalBasis: "都市更新條例第12條第1項第2款",
-        method: "權利變換",
-        stage: "變更或補充公告",
-        stageDetail: "變更或補充公告 (第2次)",
-        announceCount: 2,
-        publishDateRoc: "115.09.15 08:00",
-        deadlineRoc: "115.09.16 17:00",
-        publishDateIso: "2026-09-15",
-        deadlineIso: "2026-09-16",
-        areaSqm: 3071.00,
-        zoning: "第三種住宅區及道路用地",
-        publicLandRatio: 76.80,
-        privateLandRatio: 23.20,
-        estInvestBillion: 31.0,
-        starred: false,
-        locationDesc: "永吉路30巷與120巷周邊。",
-        durationReq: "依規定。",
-        bondAmount: "新臺幣 3,000 萬元",
-        docFee: "新臺幣 8,000 元",
-        qualification: { general: "股份有限公司", financial: "資本額3億以上，淨值5億以上", technical: "樓地板面積不低於2萬平方公尺" },
-        scoringWeights: [{ item: "出資計畫", weight: 75 }, { item: "共同負擔", weight: 20 }, { item: "簡報", weight: 5 }],
-        contactInfo: { person: "國家住都中心", phone: "(02) 2100-6300", email: "service@hurc.org.tw", address: "臺北市中山區" },
-        nlmaUrl: "https://twur.nlma.gov.tw/zh/merchant/announcement/view/136?mc_announcement_item_id=1297",
-        agencyUrl: "https://www.hurc.org.tw/",
-        clarificationHighlight: "第2次公告綜合評選後已完成評選委員會名單公告。",
-        winner: null, qualifiedBidders: [], committeeNote: "委員名單已公告",
-        committeeInternal: [], committeeExternal: [],
-        lifecycle: [{ count: "第2次", dateAdded: "115.09.15", type: "變更或補充公告(第2次)", period: "115.09.15 ~ 115.09.16", note: "委員名單公告。" }],
-        searchTokens: ["\"信義雅祥案\""],
-        news: [{ id: "N_136_1", date: "2026-05-12", media: "經濟日報", title: "永吉路商圈核心！住都中心信義雅祥公辦都更重啟招商 預估投資31億", summary: "信義雅祥案基地約929坪。", url: "https://news.google.com" }]
-      },
-      {
-        caseId: "UR109012",
-        city: "新北市",
-        district: "新店區",
-        alias: "新店民安段案",
-        title: "新北市新店區安忠路、安康路二段周邊公私有土地都市更新事業公開評選實施者案",
-        agency: "新北市政府財政局",
-        agencyGroup: "地方政府局處",
-        legalBasis: "都市更新條例",
-        method: "權利變換",
-        stage: "評選結果公告",
-        stageDetail: "評選結果公告 (第6次決標)",
-        announceCount: 6,
-        publishDateRoc: "114.10.31 08:00",
-        deadlineRoc: "114.11.01 17:00",
-        publishDateIso: "2025-10-31",
-        deadlineIso: "2025-11-01",
-        areaSqm: 5609.57,
-        zoning: "住宅區",
-        publicLandRatio: 65.0,
-        privateLandRatio: 35.0,
-        estInvestBillion: 35.0,
-        starred: false,
-        locationDesc: "新北市新店區安忠路、安康路二段周邊。",
-        durationReq: "依規定。",
-        bondAmount: "新臺幣 1,000 萬元",
-        docFee: "新臺幣 500 元",
-        qualification: { general: "股份有限公司", financial: "資本額5000萬以上", technical: "開發實績" },
-        scoringWeights: [{ item: "整體開發", weight: 30 }, { item: "共同負擔", weight: 25 }, { item: "團隊實績", weight: 20 }, { item: "權變分配", weight: 15 }, { item: "土地整合", weight: 5 }, { item: "簡報", weight: 5 }],
-        contactInfo: { person: "張小姐", phone: "02-29603456", email: "aj6724@ntpc.gov.tw", address: "新北市板橋區" },
-        nlmaUrl: "https://twur.nlma.gov.tw/zh/merchant/announcement/view/35?mc_announcement_item_id=699",
-        agencyUrl: "https://www.finance.ntpc.gov.tw/",
-        clarificationHighlight: "由漢吉建設股份有限公司獲選為最優申請人並完成決標公告。",
-        winner: "漢吉建設股份有限公司 (統編：24423394)",
-        qualifiedBidders: ["漢吉建設股份有限公司"],
-        committeeNote: "評選委員總額 11 人。",
-        committeeInternal: [{ seq: 1, convener: "是", name: "陳榮貴", title: "新北市財政局局長", attended: "是" }],
-        committeeExternal: [{ seq: 1, convener: "否", name: "張能政", title: "巨秉估價師事務所所長", attended: "是" }],
-        lifecycle: [{ count: "第6次", dateAdded: "114.10.31", type: "評選結果公告", period: "114.10.31 ~ 114.11.01", note: "決標公告。" }],
-        searchTokens: ["\"新店民安段\"", "\"漢吉建設\""],
-        news: [{ id: "N_104", date: "2025-11-01", media: "新北市財政局", title: "新店安康民安段公辦都更案正式決標！由漢吉建設獲選最優申請人", summary: "預計投入35億元打造現代化住宅社區。", url: "https://www.finance.ntpc.gov.tw" }]
-      },
-      {
-        caseId: "UR115019",
-        city: "臺中市",
-        district: "豐原區",
-        alias: "豐原車站翁明段案",
-        title: "豐原車站東側豐原區翁明段659地號等12筆土地都市更新事業公開評選實施者案",
-        agency: "臺中市政府",
-        agencyGroup: "地方政府局處",
-        legalBasis: "都市更新條例",
-        method: "權利變換",
-        stage: "公開評選招商中",
-        stageDetail: "公開評選實施者公告 (第2次)",
-        announceCount: 2,
-        publishDateRoc: "115.11.01 08:00",
-        deadlineRoc: "116.01.30 17:00",
-        publishDateIso: "2026-11-01",
-        deadlineIso: "2027-01-30",
-        areaSqm: 7120.5,
-        zoning: "商業區 / 住宅區",
-        publicLandRatio: 78.5,
-        privateLandRatio: 21.5,
-        estInvestBillion: 42.0,
-        starred: false,
-        locationDesc: "豐原車站東側街廓。",
-        durationReq: "依規定。",
-        bondAmount: "新臺幣 2,000 萬元",
-        docFee: "新臺幣 5,000 元",
-        qualification: { general: "股份有限公司", financial: "資本額2億以上", technical: "開發實績" },
-        scoringWeights: [{ item: "開發計畫", weight: 70 }, { item: "共同負擔", weight: 25 }, { item: "簡報", weight: 5 }],
-        contactInfo: { person: "臺中市政府都發局", phone: "04-22289111", email: "ur@taichung.gov.tw", address: "臺中市西屯區" },
-        nlmaUrl: "https://twur.nlma.gov.tw/zh/merchant/announcement/0",
-        agencyUrl: "https://www.ud.taichung.gov.tw/",
-        clarificationHighlight: "山城重要門戶大案，啟動第2次招商。",
-        winner: null, qualifiedBidders: [], committeeNote: "審查中",
-        committeeInternal: [], committeeExternal: [],
-        lifecycle: [{ count: "第2次", dateAdded: "115.11.01", type: "公開評選實施者公告", period: "115.11.01 ~ 116.01.30", note: "第2次招商中。" }],
-        searchTokens: ["\"豐原車站翁明段\""],
-        news: []
-      },
-      {
-        caseId: "UR115012",
-        city: "高雄市",
-        district: "岡山區",
-        alias: "岡山信義段案",
-        title: "高雄市岡山區信義段47地號土地都市更新事業公開評選實施者案",
-        agency: "高雄市政府",
-        agencyGroup: "地方政府局處",
-        legalBasis: "都市更新條例",
-        method: "權利變換",
-        stage: "公開評選招商中",
-        stageDetail: "公開評選實施者公告 (第3次)",
-        announceCount: 3,
-        publishDateRoc: "115.10.20 08:00",
-        deadlineRoc: "116.03.03 17:00",
-        publishDateIso: "2026-10-20",
-        deadlineIso: "2027-03-03",
-        areaSqm: 8450.0,
-        zoning: "商業區",
-        publicLandRatio: 100.0,
-        privateLandRatio: 0.0,
-        estInvestBillion: 46.0,
-        starred: true,
-        locationDesc: "岡山車站與捷運紅線R24站旁。",
-        durationReq: "依規定。",
-        bondAmount: "新臺幣 3,000 萬元",
-        docFee: "新臺幣 8,000 元",
-        qualification: { general: "股份有限公司", financial: "資本額3億以上", technical: "商業開發實績" },
-        scoringWeights: [{ item: "開發構想", weight: 70 }, { item: "共同負擔", weight: 25 }, { item: "簡報", weight: 5 }],
-        contactInfo: { person: "高雄市都發局", phone: "07-3368333", email: "ur@kcg.gov.tw", address: "高雄市苓雅區" },
-        nlmaUrl: "https://twur.nlma.gov.tw/zh/merchant/announcement/0",
-        agencyUrl: "https://urbang.kcg.gov.tw/",
-        clarificationHighlight: "100%公有土地，鄰近捷運紅線R24站旁，商業潛力極高。",
-        winner: null, qualifiedBidders: [], committeeNote: "審查中",
-        committeeInternal: [], committeeExternal: [],
-        lifecycle: [{ count: "第3次", dateAdded: "115.10.20", type: "公開評選實施者公告", period: "115.10.20 ~ 116.03.03", note: "第3次招商中。" }],
-        searchTokens: ["\"岡山信義段\""],
-        news: []
-      },
-      {
-        caseId: "UR114018",
-        city: "臺南市",
-        district: "東區",
-        alias: "東區新都心段案",
-        title: "臺南市政府辦理之公開評選「臺南市東區新都心段24地號等6筆土地都市更新事業」徵求都市更新事業實施者案",
-        agency: "臺南市政府",
-        agencyGroup: "地方政府局處",
-        legalBasis: "都市更新條例",
-        method: "權利變換",
-        stage: "評選結果公告",
-        stageDetail: "評選結果公告 (無申請人)",
-        announceCount: 1,
-        publishDateRoc: "115.10.14 08:00",
-        deadlineRoc: "115.10.15 17:00",
-        publishDateIso: "2026-10-14",
-        deadlineIso: "2026-10-15",
-        areaSqm: 6200.0,
-        zoning: "住宅區 (平實營區周邊)",
-        publicLandRatio: 85.0,
-        privateLandRatio: 15.0,
-        estInvestBillion: 30.0,
-        starred: false,
-        locationDesc: "平實營區重劃區周邊。",
-        durationReq: "檢討中。",
-        bondAmount: "新臺幣 1,500 萬元",
-        docFee: "New",
-        qualification: { general: "股份有限公司", financial: "資本額2億以上", technical: "住宅實績" },
-        scoringWeights: [{ item: "計畫", weight: 80 }, { item: "共同負擔", weight: 15 }, { item: "簡報", weight: 5 }],
-        contactInfo: { person: "臺南市都發局", phone: "06-2991111", email: "urban@mail.tainan.gov.tw", address: "臺南市安平區" },
-        nlmaUrl: "https://twur.nlma.gov.tw/zh/merchant/announcement/0",
-        agencyUrl: "https://www.tainan.gov.tw/",
-        clarificationHighlight: "無廠商投標流標，正檢討招商條件籌備重新公告。",
-        winner: null, qualifiedBidders: [], committeeNote: "流標檢討中",
-        committeeInternal: [], committeeExternal: [],
-        lifecycle: [{ count: "第1次", dateAdded: "115.10.14", type: "評選結果公告", period: "115.10.14 ~ 115.10.15", note: "無申請人流標。" }],
-        searchTokens: ["\"東區新都心段\""],
-        news: []
-      }
+
+function runDailyAutomatedUpdate() {
+const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+let sheetMaster = ss.getSheetByName("Tenders_Master");
+if (!sheetMaster) { sheetMaster = ss.insertSheet("Tenders_Master"); }
+else { if (sheetMaster.getLastRow() > 1) { sheetMaster.getRange(2, 1, sheetMaster.getLastRow()-1, sheetMaster.getLastColumn()).clearContent(); } }
+
+if (sheetMaster.getLastRow() === 0) {
+sheetMaster.appendRow(["caseId", "city", "agency", "title", "stage", "deadline", "area", "investment", "newsSummary", "newsCount", "officialUrl"]);
+}
+Logger.log("更新完成！");
+}
+
+function doGet(e) {
+const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+const sheet = ss.getSheetByName("Tenders_Master");
+const data = sheet.getDataRange().getValues();
+let headers = data[0];
+let rows = data.slice(1);
+let result = rows.map(r => {
+let obj = {};
+headers.forEach((h, i) => obj[h] = r[i]);
+return obj;
+});
+return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
+}
+
+
+
+關閉
+
+
+
+
+<!-- 頁尾 -->
+<footer class="bg-white border-t border-slate-200 mt-12 py-6 text-center text-xs text-slate-400">
+    <p>全國公辦都市更新標案與新聞追蹤戰情室 &copy; 2026 | 資料來源：內政部國土管理署公開評選平台 & Google News RSS</p>
+</footer>
+
+<!-- JavaScript 核心邏輯 -->
+<script>
+    // 內建全國公辦都更真實標案資料庫
+    let tendersData = [
+        {
+            caseId: "UR115018",
+            city: "新北市",
+            district: "新店區",
+            agency: "國家住宅及都市更新中心",
+            title: "「新北市新店區安德段20地號等28筆土地都市更新事業」公開徵求出資人公開評選案",
+            stage: "公開評選實施者公告",
+            stageCount: 1,
+            method: "權利變換",
+            area: "1,975 坪",
+            zone: "第三種住宅區及道路用地",
+            publicRatio: "公有地占比約 64.54%",
+            deadline: "2027-01-20",
+            publishDate: "2026-11-02",
+            investment: "約 32 億元",
+            deposit: "新臺幣 1,000 萬元",
+            weight: "出資計畫書(80%)、簡報與答詢(5%)、共同負擔比率(15%)",
+            qualification: "實收資本額門檻 2 億元以上；開發實績累計樓地板面積 3 萬平方公尺以上。",
+            timeline: [
+                { date: "115.11.02", type: "公開評選實施者公告", desc: "第1次正式公告招商，截標日為116.01.20。" }
+            ],
+            committee: [
+                { name: "張○○", org: "內政部國土管理署", title: "副組長 (召集人)" },
+                { name: "李○○", org: "國立臺北大學不動產與城鄉環境學系", title: "教授" }
+            ],
+            newsSummary: "[2026/11/03 經濟日報] 國家住都中心新店安德段公辦都更招商，基地近安坑輕軌，預估投資金額約32億元...",
+            newsCount: 3,
+            newsList: [
+                { date: "2026/11/03", media: "經濟日報", title: "新店安德段公辦都更案公告招商 總投資上看32億", summary: "國家住都中心積極推動安坑輕軌周邊都更，吸引各大建商目光。", url: "https://news.google.com" }
+            ],
+            officialUrl: "https://twur.nlma.gov.tw/zh/merchant/announcement/view/190"
+        },
+        {
+            caseId: "UR115017",
+            city: "新北市",
+            district: "新莊區",
+            agency: "新北市住宅及都市更新中心",
+            title: "「新北市新莊區副都心段五小段1地號等2筆土地都市更新事業」公開評選實施者招商案",
+            stage: "公開評選實施者公告",
+            stageCount: 1,
+            method: "權利變換 / 設定地上權",
+            area: "2,410 坪",
+            zone: "商業區",
+            publicRatio: "公有地占比 100%",
+            deadline: "2027-02-25",
+            publishDate: "2026-10-29",
+            investment: "約 48 億元",
+            deposit: "新臺幣 1,500 萬元",
+            weight: "財務計畫(60%)、建築規劃(30%)、營運管理(10%)",
+            qualification: "實收資本額 5 億元以上，淨值 15 億元以上。",
+            timeline: [
+                { date: "115.10.29", type: "公開評選實施者公告", desc: "新莊副都心精華商業區招商，招商期限至116.02.25。" }
+            ],
+            committee: [],
+            newsSummary: "[2026/10/30 工商時報] 新莊副都心千坪商業區公辦都更開跑，新北住都中心預估引資48億...",
+            newsCount: 2,
+            newsList: [
+                { date: "2026/10/30", media: "工商時報", title: "新莊副都心公辦都更招商 鎖定商辦與複合開發", summary: "新北住都中心推出副都心精華地段，吸引壽險與開發商高度關注。", url: "https://news.google.com" }
+            ],
+            officialUrl: "https://twur.nlma.gov.tw/zh/merchant/announcement/view/188"
+        },
+        {
+            caseId: "UR115017-KH",
+            city: "高雄市",
+            district: "新興區",
+            agency: "國家住宅及都市更新中心",
+            title: "「高雄市新興區新興段三小段(青年高分社)暨大統段(陸軍服務社)公辦都更案」公開評選出資人案",
+            stage: "公開評選實施者公告",
+            stageCount: 1,
+            method: "權利變換 (跨區聯合開發)",
+            area: "1,694 坪",
+            zone: "第四種商業區",
+            publicRatio: "公有地占比 100%",
+            deadline: "2026-11-30",
+            publishDate: "2026-09-21",
+            investment: "約 59 億元",
+            deposit: "新臺幣 2,000 萬元",
+            weight: "財務計畫(50%)、建築規劃(40%)、企業社會責任(10%)",
+            qualification: "實收資本額 10 億元以上，具大型商辦或住宅開發實績。",
+            timeline: [
+                { date: "115.09.21", type: "公開評選實施者公告", desc: "跨區整合美麗島站與中央公園商圈精華地段，總投資59億。" }
+            ],
+            committee: [],
+            newsSummary: "[2026/09/22 聯合報] 高雄捷運美麗島站旁公辦都更啟動，跨區整合青年高分社與陸軍服務社...",
+            newsCount: 4,
+            newsList: [
+                { date: "2026/09/22", media: "聯合報", title: "高雄青年高分社公辦都更招商 總投資59億打造地標", summary: "結合捷運紅橘線樞紐，預期引入民間資金共創商圈繁榮。", url: "https://news.google.com" }
+            ],
+            officialUrl: "https://twur.nlma.gov.tw/zh/merchant/announcement/view/193"
+        },
+        {
+            caseId: "UR114027",
+            city: "臺北市",
+            district: "信義區",
+            agency: "國家住宅及都市更新中心",
+            title: "「臺北市信義區犁和段二小段1地號等59筆暨三興段二小段507地號等14筆土地」信義兒福B2案招商案",
+            stage: "變更或補充公告",
+            stageCount: 2,
+            method: "權利變換",
+            area: "6,891 坪",
+            zone: "住宅區與商業區",
+            publicRatio: "公有地占比 78%",
+            deadline: "2026-11-12",
+            publishDate: "2026-07-08",
+            investment: "約 285 億元",
+            deposit: "新臺幣 5,000 萬元",
+            weight: "綜合評選(80%)、共同負擔比率(20%)",
+            qualification: "實收資本額 20 億元以上，淨值 50 億元以上。",
+            timeline: [
+                { date: "115.07.08", type: "公開評選實施者公告", desc: "信義兒福B2基地旗艦招商案正式公告。" },
+                { date: "115.08.27", type: "變更或補充公告", desc: "修正部分投標須知與共同負擔比例上限條文。" }
+            ],
+            committee: [],
+            newsSummary: "[2026/08/28 自由時報] 信義兒福B2公辦都更案總投資破285億，國家住都中心力拼年底選出最優申請人...",
+            newsCount: 5,
+            newsList: [
+                { date: "2026/08/28", media: "自由時報", title: "信義兒福B2案 總投資高達285億元", summary: "北市信義區罕見超大型公辦都更案，吸引壽險與龍頭開發商搶標。", url: "https://news.google.com" }
+            ],
+            officialUrl: "https://twur.nlma.gov.tw/zh/merchant/announcement/view/164"
+        },
+        {
+            caseId: "UR115016",
+            city: "新北市",
+            district: "三重區",
+            agency: "新北市住宅及都市更新中心",
+            title: "「新北市三重區永安段1401地號等6筆土地都市更新事業」公開評選實施者招商案",
+            stage: "公開評選實施者公告",
+            stageCount: 1,
+            method: "權利變換",
+            area: "1,120 坪",
+            zone: "住宅區",
+            publicRatio: "公有地占比 82%",
+            deadline: "2027-01-27",
+            publishDate: "2026-10-29",
+            investment: "約 21 億元",
+            deposit: "新臺幣 800 萬元",
+            weight: "財務計畫(60%)、建築規畫(40%)",
+            qualification: "實收資本額 1.5 億元以上。",
+            timeline: [
+                { date: "115.10.29", type: "公開評選實施者公告", desc: "三重永安段公辦都更案正式公告招商。" }
+            ],
+            committee: [],
+            newsSummary: "[2026/10/30 聯合報] 新北住都中心推出三重永安段公辦都更，鄰近捷運站交通便利...",
+            newsCount: 2,
+            newsList: [
+                { date: "2026/10/30", media: "聯合報", title: "三重永安段公辦都更案招商 預估引資21億", summary: "新北住都中心加速三重在地老舊社區再生。", url: "https://news.google.com" }
+            ],
+            officialUrl: "https://twur.nlma.gov.tw/zh/merchant/announcement/view/189"
+        },
+        {
+            caseId: "UR115019",
+            city: "臺中市",
+            district: "豐原區",
+            agency: "臺中市政府都市發展局",
+            title: "「臺中市豐原區翁明段等地號土地都市更新事業」豐原車站東側第2次招商案",
+            stage: "公開評選實施者公告",
+            stageCount: 2,
+            method: "權利變換",
+            area: "3,150 坪",
+            zone: "車站專用區 / 商業區",
+            publicRatio: "公有地占比 90%",
+            deadline: "2027-01-30",
+            publishDate: "2026-11-01",
+            investment: "約 38 億元",
+            deposit: "新臺幣 1,200 萬元",
+            weight: "開發構想(50%)、財務計畫(40%)、企業承諾(10%)",
+            qualification: "實收資本額 3 億元以上。",
+            timeline: [
+                { date: "115.11.01", type: "公開評選實施者公告", desc: "豐原車站東側公辦都更重啟第2次招商。" }
+            ],
+            committee: [],
+            newsSummary: "[2026/11/02 中時新聞網] 臺中豐原車站東側都更案捲土重來，市府降地主門檻力拼招商成功...",
+            newsCount: 3,
+            newsList: [
+                { date: "2026/11/02", media: "中時新聞網", title: "豐原車站東側都更案第2次招商啟動", summary: "結合豐原交通樞紐，打造山城在地商業與住宅新地標。", url: "https://news.google.com" }
+            ],
+            officialUrl: "https://twur.nlma.gov.tw/zh/merchant/announcement/view/191"
+        }
     ];
 
-    let tendersData = [...INITIAL_TENDERS_DATA];
-    let currentFilterCity = 'ALL';
-    let currentFilterStarOnly = false;
-    let currentViewMode = 'table';
-    let activeDrawerCaseId = null;
-    let activeDrawerTab = 'news';
+    let currentRegionFilter = 'ALL';
+    let currentDrawerCaseId = null;
 
-    function sqmToPing(sqm) { return Math.round(sqm * 0.3025); }
-
-    function calcDaysRemaining(deadlineIso, stage) {
-      if (stage === '評選結果公告') return null;
-      if (!deadlineIso) return null;
-      const today = getLiveTodayDate();
-      const target = new Date(deadlineIso + 'T00:00:00');
-      const diffTime = target - today;
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      return diffDays;
+    /**
+     * 嚴格過濾重複案件資料的函式 (Dedup by Case ID & Title)
+     * 徹底解決安德段等案件重複顯示多筆的問題
+     */
+    function filterDuplicateTenders(tenders) {
+        if (!Array.isArray(tenders)) return [];
+        const uniqueMap = new Map();
+        
+        return tenders.filter(tender => {
+            // 排除已知的錯誤資料
+            if (tender.caseId === 'UR114029' || (tender.title && tender.title.includes('建功段'))) {
+                return false;
+            }
+            // 優先以「標案案號 (caseId)」結合「縣市 (city)」作為唯一識別；若無則使用「案名 (title)」
+            const caseIdKey = tender.caseId ? `${tender.caseId}_${tender.city || ''}` : null;
+            const uniqueKey = caseIdKey || tender.title;
+            
+            if (!uniqueKey) return true;
+            
+            if (uniqueMap.has(uniqueKey)) {
+                return false; // 重複則過濾掉
+            }
+            
+            uniqueMap.set(uniqueKey, true);
+            return true;
+        });
     }
 
-    function getCityBadgeClass(city) {
-      if (city === '臺北市') return 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20';
-      if (city === '新北市') return 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20';
-      if (city === '桃園市') return 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20';
-      if (city === '臺中市') return 'bg-amber-500/10 text-amber-600 dark:text-amber-300 border-amber-500/20';
-      if (city === '臺南市') return 'bg-purple-500/10 text-purple-600 dark:text-purple-300 border-purple-500/20';
-      if (city === '高雄市') return 'bg-sky-500/10 text-sky-600 dark:text-sky-300 border-sky-500/20';
-      return 'bg-slate-500/10 text-slate-600 dark:text-slate-300 border-slate-500/20';
-    }
-
-    function getStageBadgeStyle(stage) {
-      if (stage === '公開評選招商中') return { badge: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30', dot: 'bg-emerald-500' };
-      if (stage === '變更或補充公告') return { badge: 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30', dot: 'bg-amber-500' };
-      if (stage === '公開閱覽') return { badge: 'bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/30', dot: 'bg-sky-500' };
-      if (stage === '評選結果公告') return { badge: 'bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-500/30', dot: 'bg-rose-500' };
-      return { badge: 'bg-slate-500/10 text-slate-700 dark:text-slate-300 border-slate-500/25', dot: 'bg-slate-400' };
-    }
-
-    function sanitizeTenders(arr) {
-      if (!Array.isArray(arr) || arr.length === 0) return INITIAL_TENDERS_DATA;
-      return arr.filter(item => item && item.caseId && item.title);
-    }
-
-    function loadDataFromStorage() {
-      try {
-        const local = localStorage.getItem('UR_NATIONAL_TENDERS_STORE');
-        if (local) {
-          const parsed = JSON.parse(local);
-          const cleaned = sanitizeTenders(parsed);
-          if (cleaned.length > 0) {
-            tendersData = cleaned;
-          }
+    // 初始化載入
+    window.addEventListener('DOMContentLoaded', () => {
+        loadLocalData();
+        updateCurrentDateDisplay();
+        applyFilters();
+        
+        const savedGasUrl = localStorage.getItem('UR_GAS_URL');
+        if (savedGasUrl) {
+            document.getElementById('gas-url-input').value = savedGasUrl;
         }
-      } catch (e) { console.warn('LocalStorage 讀取失敗', e); }
-    }
+    });
 
-    function saveDataToStorage() {
-      try {
-        localStorage.setItem('UR_NATIONAL_TENDERS_STORE', JSON.stringify(tendersData));
-      } catch (e) { console.warn('LocalStorage 儲存失敗', e); }
-    }
-
-    function showToast(msg) {
-      const toast = document.getElementById('toastNotification');
-      document.getElementById('toastMessageText').textContent = msg;
-      toast.classList.remove('hidden');
-      toast.classList.add('flex');
-      setTimeout(() => {
-        toast.classList.remove('flex');
-        toast.classList.add('hidden');
-      }, 3000);
-    }
-
-    function toggleTheme() {
-      document.documentElement.classList.toggle('dark');
-      localStorage.setItem('UR_THEME', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
-    }
-
-    // 1. KPI 渲染
-    function renderKPICards() {
-      const totalCount = tendersData.length;
-      const activeBiddingCount = tendersData.filter(t => t.stage === '公開評選招商中').length;
-      const clarificationCount = tendersData.filter(t => t.stage === '變更或補充公告').length;
-      const resultCount = tendersData.filter(t => t.stage === '評選結果公告').length;
-      const totalNewsCount = tendersData.reduce((acc, cur) => acc + (cur.news ? cur.news.length : 0), 0);
-
-      const activeDeadlines = tendersData
-        .map(t => ({ ...t, days: calcDaysRemaining(t.deadlineIso, t.stage) }))
-        .filter(x => x.days !== null && x.days >= 0)
-        .sort((a, b) => a.days - b.days);
-
-      const nearestCase = activeDeadlines.length > 0 ? activeDeadlines[0] : null;
-
-      document.getElementById('kpiCardsContainer').innerHTML = `
-        <div onclick="quickFilterByStage('公開評選招商中')" class="cursor-pointer group bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200 dark:border-slate-800 hover:border-emerald-500/50 transition shadow-sm flex items-start justify-between">
-          <div>
-            <div class="flex items-center gap-2">
-              <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">公開評選招商中</span>
-              <span class="px-1.5 py-0.5 text-[10px] rounded bg-emerald-500/10 text-emerald-500 font-medium">進行中</span>
-            </div>
-            <div class="mt-2 flex items-baseline gap-2">
-              <span class="text-2xl font-bold font-mono text-slate-900 dark:text-white">${activeBiddingCount}</span>
-              <span class="text-xs text-slate-500">/ 共 ${totalCount} 案</span>
-            </div>
-            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5">信義兒福B2、新店安德段、高雄青年高分社等</p>
-          </div>
-          <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 group-hover:scale-110 transition">
-            <i class="fa-solid fa-bullhorn text-base"></i>
-          </div>
-        </div>
-
-        <div onclick="quickFilterByStage('變更或補充公告')" class="cursor-pointer group bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200 dark:border-slate-800 hover:border-amber-500/50 transition shadow-sm flex items-start justify-between">
-          <div>
-            <div class="flex items-center gap-2">
-              <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">變更或補充公告 (釋疑)</span>
-              <span class="px-1.5 py-0.5 text-[10px] rounded bg-amber-500/10 text-amber-500 font-medium">重點關注</span>
-            </div>
-            <div class="mt-2 flex items-baseline gap-2">
-              <span class="text-2xl font-bold font-mono text-slate-900 dark:text-white">${clarificationCount}</span>
-              <span class="text-xs text-slate-500">筆釋疑公告</span>
-            </div>
-            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5">近期各主辦機關發布之補充與釋疑</p>
-          </div>
-          <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 group-hover:scale-110 transition">
-            <i class="fa-solid fa-file-circle-exclamation text-base"></i>
-          </div>
-        </div>
-
-        <div onclick="${nearestCase ? `openDetailDrawer('${nearestCase.caseId}', 'specs')` : ''}" class="cursor-pointer group bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200 dark:border-slate-800 hover:border-blue-500/50 transition shadow-sm flex items-start justify-between">
-          <div>
-            <div class="flex items-center gap-2">
-              <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">最近截標倒數預警</span>
-              <span class="px-1.5 py-0.5 text-[10px] rounded bg-blue-500/10 text-blue-500 font-mono">即時倒數</span>
-            </div>
-            <div class="mt-2 flex items-baseline gap-2">
-              <span class="text-2xl font-bold font-mono text-blue-600 dark:text-blue-400">${nearestCase ? nearestCase.days + ' 天' : '--'}</span>
-              <span class="text-xs font-semibold text-slate-700 dark:text-slate-300 truncate max-w-[130px]">${nearestCase ? nearestCase.alias : ''}</span>
-            </div>
-            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5">尚有 <span class="font-mono font-semibold">${activeDeadlines.length}</span> 筆招商案待截標</p>
-          </div>
-          <div class="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-500 group-hover:scale-110 transition">
-            <i class="fa-solid fa-hourglass-half text-base"></i>
-          </div>
-        </div>
-
-        <div onclick="quickFilterByStage('評選結果公告')" class="cursor-pointer group bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200 dark:border-slate-800 hover:border-rose-500/50 transition shadow-sm flex items-start justify-between">
-          <div>
-            <div class="flex items-center gap-2">
-              <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">評選結果 & 新聞庫</span>
-              <span class="px-1.5 py-0.5 text-[10px] rounded bg-rose-500/10 text-rose-500 font-medium">決標記錄</span>
-            </div>
-            <div class="mt-2 flex items-baseline gap-2">
-              <span class="text-2xl font-bold font-mono text-slate-900 dark:text-white">${resultCount} <span class="text-xs font-normal text-slate-400">結果</span> / ${totalNewsCount} <span class="text-xs font-normal text-slate-400">新聞</span></span>
-            </div>
-            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5">新店民安段(漢吉得標)、台南東區新都心段</p>
-          </div>
-          <div class="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-500 group-hover:scale-110 transition">
-            <i class="fa-solid fa-award text-base"></i>
-          </div>
-        </div>
-      `;
-    }
-
-    const PRIMARY_CITIES = ['臺北市', '新北市', '桃園市', '臺中市', '臺南市', '高雄市', '新竹市', '基隆市'];
-
-    function renderCityPills() {
-      const filterOptions = [
-        { key: 'ALL', label: '全國總覽' },
-        { key: '臺北市', label: '臺北市' },
-        { key: '新北市', label: '新北市' },
-        { key: '桃園市', label: '桃園市' },
-        { key: '臺中市', label: '臺中市' },
-        { key: '臺南市', label: '臺南市' },
-        { key: '高雄市', label: '高雄市' },
-        { key: '新竹市', label: '新竹市' },
-        { key: '基隆市', label: '基隆市' },
-        { key: 'OTHER', label: '其他縣市' }
-      ];
-      const container = document.getElementById('cityPillsContainer');
-      container.innerHTML = filterOptions.map(opt => {
-        let count = 0;
-        if (opt.key === 'ALL') count = tendersData.length;
-        else if (opt.key === 'OTHER') count = tendersData.filter(t => !PRIMARY_CITIES.includes(t.city)).length;
-        else count = tendersData.filter(t => t.city === opt.key).length;
-        const isActive = currentFilterCity === opt.key;
-        return `
-          <button onclick="selectCityFilter('${opt.key}')" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition ${isActive ? 'bg-blue-600 text-white shadow-sm' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'}">
-            <span>${opt.label}</span>
-            <span class="px-1.5 py-0.2 rounded-full text-[10px] font-mono ${isActive ? 'bg-blue-700 text-white' : 'bg-slate-200 dark:bg-slate-700'}">${count}</span>
-          </button>
-        `;
-      }).join('');
-      document.getElementById('starCountBadge').textContent = tendersData.filter(t => t.starred).length;
-    }
-
-    function getFilteredTenders() {
-      const searchVal = (document.getElementById('searchInput').value || '').trim().toLowerCase();
-      const stageVal = document.getElementById('stageSelect').value;
-      const agencyVal = document.getElementById('agencySelect').value;
-      const sortVal = document.getElementById('sortSelect').value;
-
-      document.getElementById('clearSearchBtn').classList.toggle('hidden', !searchVal);
-
-      let list = tendersData.filter(item => {
-        if (currentFilterCity !== 'ALL') {
-          if (currentFilterCity === 'OTHER') { if (PRIMARY_CITIES.includes(item.city)) return false; }
-          else if (item.city !== currentFilterCity) return false;
-        }
-        if (currentFilterStarOnly && !item.starred) return false;
-        if (stageVal !== 'ALL' && item.stage !== stageVal) return false;
-        if (agencyVal !== 'ALL') {
-          if (agencyVal === '地方政府局處' && item.agencyGroup === '國家住宅及都市更新中心') return false;
-          else if (agencyVal !== '地方政府局處' && item.agency !== agencyVal) return false;
-        }
-        if (searchVal) {
-          const newsText = (item.news || []).map(n => n.title + ' ' + n.summary).join(' ');
-          const haystack = `${item.caseId} ${item.city} ${item.district} ${item.alias} ${item.title} ${item.agency} ${item.winner || ''} ${newsText}`.toLowerCase();
-          if (!haystack.includes(searchVal)) return false;
-        }
-        return true;
-      });
-
-      list.sort((a, b) => {
-        if (sortVal === 'publishDesc') return new Date(b.publishDateIso) - new Date(a.publishDateIso);
-        if (sortVal === 'deadlineAsc') return (calcDaysRemaining(a.deadlineIso, a.stage) ?? 9999) - (calcDaysRemaining(b.deadlineIso, b.stage) ?? 9999);
-        if (sortVal === 'areaDesc') return b.areaSqm - a.areaSqm;
-        if (sortVal === 'investDesc') return (b.estInvestBillion || 0) - (a.estInvestBillion || 0);
-        return 0;
-      });
-      return list;
-    }
-
-    function applyFilters() {
-      renderKPICards();
-      renderCityPills();
-      const filtered = getFilteredTenders();
-      document.getElementById('resultCountText').textContent = `共 ${filtered.length} 筆案件`;
-      if (currentViewMode === 'table') renderTableView(filtered);
-      else renderKanbanView(filtered);
-      renderGlobalNewsWall();
-    }
-
-    function renderTableView(list) {
-      const tbody = document.getElementById('tenderTableBody');
-      if (list.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="py-12 text-center text-slate-400"><i class="fa-solid fa-folder-open text-2xl mb-2 block"></i>找不到符合條件的標案。</td></tr>`;
-        return;
-      }
-      tbody.innerHTML = list.map(item => {
-        const ping = sqmToPing(item.areaSqm).toLocaleString();
-        const sqmStr = item.areaSqm.toLocaleString();
-        const daysLeft = calcDaysRemaining(item.deadlineIso, item.stage);
-        const stageStyle = getStageBadgeStyle(item.stage);
-        const latestNews = item.news && item.news[0];
-        const newsCount = item.news ? item.news.length : 0;
-
-        let countdownHtml = '';
-        if (item.stage === '評選結果公告') {
-          countdownHtml = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-rose-500/10 text-rose-600 border border-rose-500/20"><i class="fa-solid fa-gavel"></i> 已決標</span>`;
-        } else if (daysLeft !== null) {
-          if (daysLeft > 0) {
-            countdownHtml = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono font-semibold border bg-blue-500/10 text-blue-600 border-blue-500/20"><i class="fa-regular fa-clock"></i> 剩餘 ${daysLeft} 天</span>`;
-          } else if (daysLeft === 0) {
-            countdownHtml = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono font-semibold border bg-amber-500/10 text-amber-600 border-amber-500/20"><i class="fa-solid fa-triangle-exclamation"></i> 今日截標！</span>`;
-          } else {
-            countdownHtml = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-500/10 text-slate-500 border border-slate-500/20"><i class="fa-solid fa-circle-check"></i> 已過截標日</span>`;
-          }
+    function loadLocalData() {
+        const saved = localStorage.getItem('UR_CUSTOM_TENDERS');
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                tendersData = filterDuplicateTenders([...tendersData, ...parsed]);
+            } catch(e) { console.error(e); }
         } else {
-          countdownHtml = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] bg-sky-500/10 text-sky-500">招商中</span>`;
+            tendersData = filterDuplicateTenders(tendersData);
         }
-
-        return `
-          <tr onclick="openDetailDrawer('${item.caseId}')" class="group hover:bg-blue-50/50 dark:hover:bg-slate-800/60 cursor-pointer transition">
-            <td class="py-3.5 pl-4 pr-2 text-center" onclick="event.stopPropagation(); toggleCaseStar('${item.caseId}')">
-              <button class="w-7 h-7 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 inline-flex items-center justify-center transition">
-                <i class="${item.starred ? 'fa-solid text-amber-400' : 'fa-regular text-slate-400'} fa-star text-sm"></i>
-              </button>
-            </td>
-            <td class="py-3.5 px-3 align-top">
-              <div class="font-mono font-bold text-xs text-blue-600 dark:text-blue-400 group-hover:underline">${item.caseId}</div>
-              <div class="mt-1 flex items-center gap-1">
-                <span class="px-1.5 py-0.5 rounded text-[11px] font-medium border ${getCityBadgeClass(item.city)}">${item.city}</span>
-                <span class="text-slate-600 dark:text-slate-300 font-medium">${item.district}</span>
-              </div>
-            </td>
-            <td class="py-3.5 px-3 align-top max-w-[310px]">
-              <div class="flex items-center gap-1.5 flex-wrap mb-1">
-                <span class="px-2 py-0.5 rounded-md text-[11px] font-bold bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900">${item.alias}</span>
-                ${item.estInvestBillion ? `<span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 border border-indigo-500/20">預估投資 ${item.estInvestBillion} 億</span>` : ''}
-              </div>
-              <div class="text-slate-800 dark:text-slate-100 font-medium leading-snug line-clamp-2">${item.title}</div>
-              ${item.winner ? `<div class="mt-1 text-[11px] font-semibold text-rose-600"><i class="fa-solid fa-trophy mr-1"></i>最優申請人：${item.winner}</div>` : ''}
-            </td>
-            <td class="py-3.5 px-3 align-top">
-              <div class="font-semibold text-slate-800 dark:text-slate-200 leading-snug">${item.agency}</div>
-              <div class="mt-1"><span class="px-2 py-0.5 rounded text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border">${item.method}</span></div>
-            </td>
-            <td class="py-3.5 px-3 align-top">
-              <div class="font-mono font-bold text-slate-900 dark:text-white">約 ${ping} 坪 <span class="text-[11px] font-normal text-slate-500">(${sqmStr}㎡)</span></div>
-              <div class="text-[11px] text-slate-500 mt-0.5 truncate max-w-[165px]">${item.zoning}</div>
-              <div class="mt-1.5 flex items-center gap-2">
-                <div class="flex-1 h-1.5 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden"><div class="h-full bg-blue-500 rounded-full" style="width: ${item.publicLandRatio}%"></div></div>
-                <span class="text-[10px] font-mono text-slate-600 dark:text-slate-300">公地 ${item.publicLandRatio}%</span>
-              </div>
-            </td>
-            <td class="py-3.5 px-3 align-top">
-              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border ${stageStyle.badge}">
-                <span class="w-1.5 h-1.5 rounded-full ${stageStyle.dot}"></span>${item.stage}
-              </span>
-              <div class="text-[11px] text-slate-500 mt-1 pl-1">第 <span class="font-mono font-bold">${item.announceCount}</span> 次公告</div>
-            </td>
-            <td class="py-3.5 px-3 align-top font-mono">
-              <div class="text-[11px] text-slate-500">公告：${item.publishDateRoc.split(' ')[0]}</div>
-              <div class="text-xs font-semibold text-slate-800 dark:text-slate-200 mt-0.5">截止：${item.deadlineRoc.split(' ')[0]}</div>
-              <div class="mt-1.5">${countdownHtml}</div>
-            </td>
-            <td class="py-3.5 pl-3 pr-5 align-top max-w-[300px]" onclick="event.stopPropagation(); openDetailDrawer('${item.caseId}', 'news')">
-              ${latestNews ? `
-                <div class="p-2.5 rounded-xl bg-amber-500/5 hover:bg-amber-500/10 dark:bg-slate-800 border border-amber-500/20 transition">
-                  <div class="flex items-center justify-between gap-1 mb-1">
-                    <span class="text-[10px] font-semibold text-amber-600 dark:text-amber-400"><i class="fa-solid fa-newspaper"></i> ${latestNews.media}</span>
-                    <span class="px-1.5 py-0.2 text-[10px] font-mono bg-amber-500/15 text-amber-700 dark:text-amber-300">${newsCount} 則</span>
-                  </div>
-                  <div class="text-xs font-semibold text-slate-800 dark:text-slate-100 line-clamp-1">${latestNews.title}</div>
-                </div>
-              ` : `<div class="text-slate-400 text-xs italic">尚無關聯新聞</div>`}
-            </td>
-          </tr>
-        `;
-      }).join('');
     }
 
-    function renderKanbanView(list) {
-      const container = document.getElementById('kanbanViewContainer');
-      const columns = [
-        { key: '公開閱覽', title: '🔵 公開閱覽 / 委員預告', border: 'border-sky-500/40' },
-        { key: '公開評選招商中', title: '🟢 公開評選招商中', border: 'border-emerald-500/40' },
-        { key: '變更或補充公告', title: '🟠 變更或補充公告 (釋疑)', border: 'border-amber-500/40' },
-        { key: '評選結果公告', title: '🔴 評選結果公告 (決標)', border: 'border-rose-500/40' }
-      ];
-      container.innerHTML = columns.map(col => {
-        const items = list.filter(i => i.stage === col.key);
-        return `
-          <div class="bg-slate-100 dark:bg-slate-900 rounded-2xl p-3.5 border-t-4 ${col.border} border border-slate-200 dark:border-slate-800 flex flex-col gap-3">
-            <div class="flex items-center justify-between px-1">
-              <h3 class="text-xs font-bold text-slate-800 dark:text-slate-100">${col.title}</h3>
-              <span class="px-2 py-0.5 rounded-full text-[11px] font-mono font-bold bg-white dark:bg-slate-800 shadow-sm">${items.length}</span>
-            </div>
-            <div class="space-y-3">
-              ${items.length === 0 ? `<div class="py-8 text-center text-xs text-slate-400">目前無此階段案件</div>` : items.map(item => `
-                <div onclick="openDetailDrawer('${item.caseId}')" class="bg-white dark:bg-slate-850 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-blue-500 cursor-pointer shadow-sm transition space-y-2">
-                  <div class="flex items-center justify-between"><span class="font-mono text-[11px] font-bold text-blue-600">${item.caseId}</span><span class="px-1.5 py-0.5 rounded text-[10px] border ${getCityBadgeClass(item.city)}">${item.city}</span></div>
-                  <div><span class="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-900 text-white mb-1 inline-block">${item.alias}</span><h4 class="text-xs font-semibold line-clamp-2">${item.title}</h4></div>
-                </div>
-              `).join('')}
-            </div>
-          </div>
-        `;
-      }).join('');
+    function updateCurrentDateDisplay() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const taiwanYear = year - 1911;
+        document.getElementById('current-date-display').innerText = `系統基準日：民國 ${taiwanYear}.${month}.${day} (${year}-${month}-${day})`;
     }
 
-    function renderGlobalNewsWall() {
-      const container = document.getElementById('globalNewsGrid');
-      const allNews = [];
-      tendersData.forEach(t => { (t.news || []).forEach(n => allNews.push({ ...n, caseId: t.caseId, alias: t.alias, estInvestBillion: t.estInvestBillion })); });
-      allNews.sort((a, b) => new Date(b.date) - new Date(a.date));
-      container.innerHTML = allNews.slice(0, 6).map(n => `
-        <div onclick="openDetailDrawer('${n.caseId}', 'news')" class="group bg-slate-50 dark:bg-slate-800/50 hover:bg-blue-50 rounded-xl p-4 border border-slate-200 dark:border-slate-800 transition cursor-pointer flex flex-col justify-between">
-          <div>
-            <div class="flex items-center justify-between gap-2 mb-2">
-              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-900 text-white">${n.alias}</span>
-              <span class="text-[11px] font-mono text-slate-400">${n.media}｜${n.date}</span>
-            </div>
-            <h3 class="text-xs font-bold text-slate-900 dark:text-white group-hover:text-amber-600 transition leading-snug mb-1.5">${n.title}</h3>
-            <p class="text-[11px] text-slate-600 dark:text-slate-400 line-clamp-3">${n.summary}</p>
-          </div>
-          <div class="mt-3 pt-2 border-t flex items-center justify-between text-[11px]">
-            <span class="text-slate-500">預估投資：<strong class="font-mono">${n.estInvestBillion || '--'}億</strong></span>
-            <span class="text-blue-600 font-medium">檢視標案 <i class="fa-solid fa-arrow-right text-[10px]"></i></span>
-          </div>
-        </div>
-      `).join('');
+    // 計算剩餘天數
+    function calculateRemainingDays(deadlineStr) {
+        if (!deadlineStr) return { text: "未定", days: 999, expired: false };
+        const today = new Date();
+        today.setHours(0,0,0,0);
+        const deadline = new Date(deadlineStr);
+        deadline.setHours(0,0,0,0);
+        
+        const diffTime = deadline - today;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        if (diffDays < 0) {
+            return { text: "已截標", days: diffDays, expired: true };
+        } else if (diffDays === 0) {
+            return { text: "今日截標", days: 0, expired: false };
+        } else {
+            return { text: `剩餘 ${diffDays} 天`, days: diffDays, expired: false };
+        }
     }
 
-    function openDetailDrawer(caseId, defaultTab = null) {
-      const item = tendersData.find(t => t.caseId === caseId);
-      if (!item) return;
-      activeDrawerCaseId = caseId;
-      if (defaultTab) activeDrawerTab = defaultTab;
+    // 渲染列表與 KPI
+    function applyFilters() {
+        const searchTerm = document.getElementById('search-input').value.toLowerCase();
+        const agencyFilter = document.getElementById('filter-agency').value;
+        const stageFilter = document.getElementById('filter-stage').value;
+        const sortMode = document.getElementById('sort-select').value;
 
-      const stageStyle = getStageBadgeStyle(item.stage);
-      document.getElementById('drawerTopBadges').innerHTML = `
-        <span class="px-2.5 py-0.5 rounded font-mono text-xs font-bold bg-blue-600 text-white">${item.caseId}</span>
-        <span class="px-2 py-0.5 rounded text-xs font-semibold border ${getCityBadgeClass(item.city)}">${item.city}・${item.district}</span>
-        <span class="px-2.5 py-0.5 rounded text-xs font-bold bg-slate-900 text-white">${item.alias}</span>
-      `;
-      document.getElementById('drawerTitle').textContent = item.title;
-      document.getElementById('drawerAgencyInfo').innerHTML = `主辦機關：<strong>${item.agency}</strong> ｜ 實施方式：<strong>${item.method}</strong>`;
-      document.getElementById('drawerActionLinks').innerHTML = `
-        <a href="${item.nlmaUrl}" target="_blank" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white"><i class="fa-solid fa-building-columns mr-1"></i>國土署原始公告內頁</a>
-      `;
-      document.getElementById('drawerNewsCountBadge').textContent = item.news ? item.news.length : 0;
+        let filtered = tendersData.filter(item => {
+            if (currentRegionFilter !== 'ALL') {
+                if (currentRegionFilter === '其他') {
+                    if (['臺北市', '新北市', '桃園市', '臺中市', '高雄市'].includes(item.city)) return false;
+                } else {
+                    if (item.city !== currentRegionFilter) return false;
+                }
+            }
+            if (agencyFilter !== 'ALL' && item.agency !== agencyFilter) return false;
+            if (stageFilter !== 'ALL' && !item.stage.includes(stageFilter)) return false;
+            if (searchTerm) {
+                const matchText = `${item.caseId} ${item.city} ${item.district || ''} ${item.agency} ${item.title} ${item.investment || ''}`.toLowerCase();
+                if (!matchText.includes(searchTerm)) return false;
+            }
+            return true;
+        });
 
-      const backdrop = document.getElementById('detailDrawerBackdrop');
-      const drawer = document.getElementById('detailDrawer');
-      backdrop.classList.remove('hidden');
-      setTimeout(() => { backdrop.classList.remove('opacity-0'); drawer.classList.remove('translate-x-full'); }, 10);
-      switchDrawerTab(activeDrawerTab);
+        filtered.sort((a, b) => {
+            if (sortMode === 'deadline-asc') {
+                return new Date(a.deadline || '2099-12-31') - new Date(b.deadline || '2099-12-31');
+            } else if (sortMode === 'date-desc') {
+                return new Date(b.publishDate || '2020-01-01') - new Date(a.publishDate || '2020-01-01');
+            } else if (sortMode === 'title-asc') {
+                return a.title.localeCompare(b.title, 'zh-Hant');
+            }
+            return 0;
+        });
+
+        renderTable(filtered);
+        updateKPIs(tendersData);
+    }
+
+    function setRegionFilter(region) {
+        currentRegionFilter = region;
+        document.querySelectorAll('.region-tab').forEach(btn => {
+            if (btn.innerText.includes(region) || (region === 'ALL' && btn.innerText.includes('全國'))) {
+                btn.className = "region-tab px-3.5 py-1.5 rounded-lg text-sm font-medium bg-blue-600 text-white shadow-sm transition";
+            } else {
+                btn.className = "region-tab px-3.5 py-1.5 rounded-lg text-sm font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 transition";
+            }
+        });
+        applyFilters();
+    }
+
+    function handleSearch() { applyFilters(); }
+
+    function renderTable(data) {
+        const tbody = document.getElementById('tenders-table-body');
+        const noDataNotice = document.getElementById('no-data-notice');
+        document.getElementById('table-count-badge').innerText = `${data.length} 筆`;
+
+        tbody.innerHTML = '';
+        if (data.length === 0) {
+            noDataNotice.classList.remove('hidden');
+            return;
+        }
+        noDataNotice.classList.add('hidden');
+
+        data.forEach(item => {
+            const countdown = calculateRemainingDays(item.deadline);
+            const tr = document.createElement('tr');
+            tr.className = "hover:bg-slate-50/85 transition cursor-pointer";
+            tr.onclick = (e) => {
+                if (e.target.tagName === 'A' || e.target.closest('a')) return;
+                openDetailDrawer(item.caseId);
+            };
+
+            tr.innerHTML = `
+                <td class="py-4 px-4 text-center">
+                    <button onclick="toggleStar(event, '${item.caseId}')" class="text-slate-300 hover:text-amber-500 text-lg transition">
+                        <i class="fa-solid fa-star"></i>
+                    </button>
+                </td>
+                <td class="py-4 px-4 whitespace-nowrap">
+                    <span class="inline-block px-2 py-0.5 bg-slate-100 text-slate-800 font-mono text-xs font-bold rounded mb-1">${item.caseId}</span>
+                    <div class="text-xs font-semibold text-slate-600">${item.city} ${item.district || ''}</div>
+                </td>
+                <td class="py-4 px-4 max-w-xs">
+                    <div class="font-bold text-slate-900 line-clamp-2 leading-snug">${item.title}</div>
+                </td>
+                <td class="py-4 px-4 whitespace-nowrap text-xs">
+                    <div class="font-medium text-slate-800">${item.agency}</div>
+                    <span class="text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded mt-0.5 inline-block">${item.method || '公辦都更'}</span>
+                </td>
+                <td class="py-4 px-4 whitespace-nowrap text-xs">
+                    <div class="font-bold text-slate-700">${item.area || '未登錄'}</div>
+                    <div class="text-slate-500 mt-0.5">${item.investment || ''}</div>
+                </td>
+                <td class="py-4 px-4 whitespace-nowrap">
+                    <span class="px-2.5 py-1 text-xs font-bold rounded-full ${getStageBadgeClass(item.stage)}">${item.stage}</span>
+                </td>
+                <td class="py-4 px-4 whitespace-nowrap">
+                    <div class="text-xs font-semibold text-slate-800">${item.deadline || '未定'}</div>
+                    <span class="inline-block mt-1 px-2 py-0.5 text-xs font-bold rounded ${countdown.expired ? 'bg-slate-200 text-slate-600' : 'bg-rose-100 text-rose-700'}">${countdown.text}</span>
+                </td>
+                <td class="py-4 px-4 max-w-xs text-xs text-slate-600">
+                    <div class="truncate font-medium text-slate-800">${item.newsSummary || '尚無即時報導'}</div>
+                    <a href="${item.officialUrl || '#'}" target="_blank" class="text-blue-600 hover:underline inline-flex items-center mt-1">
+                        查看公告原址 <i class="fa-solid fa-arrow-up-right-from-square ml-1 text-[10px]"></i>
+                    </a>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function getStageBadgeClass(stage) {
+        if (stage.includes('實施者') || stage.includes('招商')) return 'bg-emerald-100 text-emerald-800';
+        if (stage.includes('公開閱覽')) return 'bg-blue-100 text-blue-800';
+        if (stage.includes('補充') || stage.includes('變更')) return 'bg-amber-100 text-amber-800';
+        if (stage.includes('委員')) return 'bg-purple-100 text-purple-800';
+        if (stage.includes('結果')) return 'bg-rose-100 text-rose-800';
+        return 'bg-slate-100 text-slate-800';
+    }
+
+    function updateKPIs(data) {
+        document.getElementById('kpi-total-count').innerText = data.length;
+        const activeCount = data.filter(i => i.stage.includes('招商') || i.stage.includes('公開閱覽')).length;
+        const updateCount = data.filter(i => i.stage.includes('補充') || i.stage.includes('變更')).length;
+        document.getElementById('kpi-active-count').innerText = activeCount;
+        document.getElementById('kpi-update-count').innerText = updateCount;
+
+        let validDeadlines = data.filter(i => i.deadline && !calculateRemainingDays(i.deadline).expired);
+        validDeadlines.sort((a,b) => new Date(a.deadline) - new Date(b.deadline));
+        const card = document.getElementById('kpi-deadline-card');
+        if (validDeadlines.length > 0) {
+            const nearest = validDeadlines[0];
+            const cd = calculateRemainingDays(nearest.deadline);
+            document.getElementById('kpi-nearest-deadline').innerText = nearest.title.replace(/「|」/g, '').substring(0, 12) + '...';
+            document.getElementById('kpi-nearest-days').innerText = `${nearest.deadline} (${cd.text})`;
+            card.onclick = () => openDetailDrawer(nearest.caseId);
+        } else {
+            document.getElementById('kpi-nearest-deadline').innerText = "無近期截標";
+            document.getElementById('kpi-nearest-days').innerText = "目前無進行中案源";
+            card.onclick = null;
+        }
+    }
+
+    function openDetailDrawer(caseId) {
+        const item = tendersData.find(i => i.caseId === caseId);
+        if (!item) return;
+        currentDrawerCaseId = caseId;
+
+        document.getElementById('drawer-case-id').innerText = item.caseId;
+        document.getElementById('drawer-city-badge').innerText = `${item.city} ${item.district || ''}`;
+        document.getElementById('drawer-title').innerText = item.title;
+        document.getElementById('drawer-official-link').href = item.officialUrl || '#';
+
+        switchDrawerTab('info');
+        document.getElementById('detail-drawer').classList.remove('hidden');
     }
 
     function closeDetailDrawer() {
-      const backdrop = document.getElementById('detailDrawerBackdrop');
-      const drawer = document.getElementById('detailDrawer');
-      backdrop.classList.add('opacity-0');
-      drawer.classList.add('translate-x-full');
-      setTimeout(() => backdrop.classList.add('hidden'), 300);
+        document.getElementById('detail-drawer').classList.add('hidden');
+        currentDrawerCaseId = null;
     }
 
     function switchDrawerTab(tabName) {
-      activeDrawerTab = tabName;
-      const item = tendersData.find(t => t.caseId === activeDrawerCaseId);
-      if (!item) return;
+        document.querySelectorAll('.drawer-tab').forEach(btn => {
+            if (btn.getAttribute('data-tab') === tabName) {
+                btn.className = "drawer-tab py-3.5 px-4 border-b-2 border-blue-600 text-blue-600 font-semibold";
+            } else {
+                btn.className = "drawer-tab py-3.5 px-4 border-b-2 border-transparent text-slate-500 hover:text-slate-700";
+            }
+        });
 
-      ['news', 'specs', 'timeline', 'committee'].forEach(t => {
-        const btn = document.getElementById('drawerTabBtn_' + t);
-        if (t === tabName) btn.className = 'drawer-tab-btn py-2 px-2.5 rounded-lg text-xs font-bold bg-white dark:bg-slate-900 text-blue-600 shadow-sm transition flex items-center justify-center gap-1.5';
-        else btn.className = 'drawer-tab-btn py-2 px-2.5 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-400 transition flex items-center justify-center gap-1.5';
-      });
+        const item = tendersData.find(i => i.caseId === currentDrawerCaseId);
+        if (!item) return;
+        const body = document.getElementById('drawer-content-body');
+        body.innerHTML = '';
 
-      const body = document.getElementById('drawerBodyContent');
-      if (tabName === 'news') {
-        body.innerHTML = `
-          <div class="space-y-3">
-            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">已收錄之案件關聯新聞 (${item.news?.length || 0} 則)</h3>
-            ${(item.news && item.news.length > 0) ? item.news.map(n => `
-              <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border space-y-2">
-                <div class="flex items-center justify-between"><span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-500/15 text-amber-700">${n.media}</span><span class="font-mono text-xs text-slate-500">${n.date}</span></div>
-                <h4 class="text-sm font-bold">${n.title}</h4>
-                <p class="text-xs text-slate-600 dark:text-slate-300">${n.summary}</p>
-                <div class="pt-2 flex justify-end"><a href="${n.url}" target="_blank" class="text-xs font-semibold text-blue-600 hover:underline">閱讀原文 <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i></a></div>
-              </div>
-            `).join('') : `<div class="p-8 text-center text-xs text-slate-400">尚無關聯新聞</div>`}
-          </div>
-        `;
-      } else if (tabName === 'specs') {
-        const ping = sqmToPing(item.areaSqm).toLocaleString();
-        body.innerHTML = `
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800 border"><div class="text-[11px] text-slate-500">基地面積</div><div class="text-base font-bold font-mono">${ping} 坪</div><div class="text-[11px] font-mono text-slate-400">${item.areaSqm}㎡</div></div>
-            <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800 border"><div class="text-[11px] text-slate-500">公有地占比</div><div class="text-base font-bold font-mono text-blue-600">${item.publicLandRatio}%</div></div>
-            <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800 border"><div class="text-[11px] text-slate-500">申請保證金</div><div class="text-xs font-bold mt-1">${item.bondAmount}</div></div>
-            <div class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800 border"><div class="text-[11px] text-slate-500">文件售價</div><div class="text-xs font-bold mt-1">${item.docFee}</div></div>
-          </div>
-        `;
-      } else if (tabName === 'timeline') {
-        body.innerHTML = `
-          <div class="p-4 rounded-xl bg-orange-500/10 border border-orange-500/25 space-y-1.5">
-            <div class="text-xs font-bold text-orange-600"><i class="fa-solid fa-bullhorn"></i> 重點摘要</div>
-            <p class="text-xs text-slate-700 dark:text-slate-200">${item.clarificationHighlight}</p>
-          </div>
-        `;
-      } else if (tabName === 'committee') {
-        body.innerHTML = `
-          <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border space-y-2">
-            <div class="text-xs font-bold"><i class="fa-solid fa-trophy text-amber-500 mr-1.5"></i>評選決標結果</div>
-            <div class="text-xs text-slate-600 dark:text-slate-300">${item.winner ? '得標廠商：' + item.winner : item.committeeNote}</div>
-          </div>
-        `;
-      }
-    }
+        if (tabName === 'info') {
+            body.innerHTML = `
+                <div class="space-y-4">
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <h4 class="font-bold text-slate-800 mb-2 flex items-center"><i class="fa-solid fa-map-location-dot text-blue-600 mr-2"></i> 基地基本規模與性質</h4>
+                        <div class="grid grid-cols-2 gap-3 text-xs">
+                            <div><span class="text-slate-500">基地面積：</span><strong class="text-slate-800">${item.area || '未登錄'}</strong></div>
+                            <div><span class="text-slate-500">使用分區：</span><strong class="text-slate-800">${item.zone || '未登錄'}</strong></div>
+                            <div><span class="text-slate-500">土地權屬：</span><strong class="text-slate-800">${item.publicRatio || '未登錄'}</strong></div>
+                            <div><span class="text-slate-500">實施方式：</span><strong class="text-slate-800">${item.method || '權利變換'}</strong></div>
+                        </div>
+                    </div>
 
-    function selectCityFilter(city) { currentFilterCity = city; applyFilters(); }
-    function toggleStarFilter() { currentFilterStarOnly = !currentFilterStarOnly; applyFilters(); }
-    function toggleCaseStar(caseId) { const t = tendersData.find(x => x.caseId === caseId); if (t) { t.starred = !t.starred; saveDataToStorage(); applyFilters(); } }
-    function switchViewMode(mode) {
-      currentViewMode = mode;
-      document.getElementById('tableViewContainer').classList.toggle('hidden', mode !== 'table');
-      document.getElementById('kanbanViewContainer').classList.toggle('hidden', mode !== 'kanban');
-      applyFilters();
-    }
-    function quickFilterByStage(stage) { document.getElementById('stageSelect').value = stage; applyFilters(); }
-    function clearSearch() { document.getElementById('searchInput').value = ''; applyFilters(); }
-    function resetAllFilters() { currentFilterCity = 'ALL'; currentFilterStarOnly = false; document.getElementById('searchInput').value = ''; document.getElementById('stageSelect').value = 'ALL'; document.getElementById('agencySelect').value = 'ALL'; applyFilters(); }
-    function openAddTenderModal() { document.getElementById('addTenderModalBackdrop').classList.remove('hidden'); }
-    function closeAddTenderModal() { document.getElementById('addTenderModalBackdrop').classList.add('hidden'); }
-    function handleAddTenderSubmit(e) {
-      e.preventDefault();
-      const t = {
-        caseId: document.getElementById('newCaseId').value.trim(),
-        alias: document.getElementById('newAlias').value.trim(),
-        city: document.getElementById('newCity').value,
-        district: document.getElementById('newDistrict').value.trim(),
-        title: document.getElementById('newTitle').value.trim(),
-        agency: document.getElementById('newAgency').value.trim(),
-        stage: document.getElementById('newStage').value,
-        areaSqm: parseFloat(document.getElementById('newAreaSqm').value) || 3000,
-        publicLandRatio: parseFloat(document.getElementById('newPublicRatio').value) || 70,
-        estInvestBillion: parseFloat(document.getElementById('newEstInvest').value) || 20,
-        publishDateIso: document.getElementById('newStartDate').value,
-        deadlineIso: document.getElementById('newEndDate').value,
-        starred: true, news: [], lifecycle: []
-      };
-      tendersData.unshift(t); saveDataToStorage(); closeAddTenderModal(); applyFilters(); showToast('新增成功');
-    }
-    function getSavedGasUrl() { return localStorage.getItem('UR_TRACKER_GAS_WEBAPP_URL') || ''; }
-    function saveGasWebAppUrl() {
-      const u = document.getElementById('gasWebAppUrlInput').value.trim();
-      if (u) localStorage.setItem('UR_TRACKER_GAS_WEBAPP_URL', u);
-      else localStorage.removeItem('UR_TRACKER_GAS_WEBAPP_URL');
-      closeGasArchitectureModal(); showToast('已儲存');
-    }
-    async function syncFromCloudNow() {
-      showToast('正在同步...');
-      const u = getSavedGasUrl();
-      if (!u) { showToast('尚未綁定 GAS 網址'); return; }
-      try {
-        const resp = await fetch(u + (u.includes('?') ? '&' : '?') + 'action=api');
-        const data = await resp.json();
-        if (data && Array.isArray(data.tenders)) {
-          tendersData = data.tenders;
-          saveDataToStorage();
-          applyFilters();
-          showToast('雲端同步成功！');
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <h4 class="font-bold text-slate-800 mb-2 flex items-center"><i class="fa-solid fa-sack-dollar text-emerald-600 mr-2"></i> 財務與招商條件</h4>
+                        <div class="space-y-2 text-xs">
+                            <div><span class="text-slate-500">預估投資金額：</span><strong class="text-emerald-700 text-sm">${item.investment || '未公告'}</strong></div>
+                            <div><span class="text-slate-500">申請保證金：</span><strong class="text-slate-800">${item.deposit || '未登錄'}</strong></div>
+                            <div><span class="text-slate-500">評選配分權重：</span><p class="text-slate-800 mt-1 font-medium bg-white p-2 rounded border border-slate-200">${item.weight || '依各案招商須知辦理'}</p></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <h4 class="font-bold text-slate-800 mb-2 flex items-center"><i class="fa-solid fa-id-card text-purple-600 mr-2"></i> 申請人資格門檻</h4>
+                        <p class="text-xs text-slate-700 leading-relaxed bg-white p-3 rounded border border-slate-200">${item.qualification || '請參閱官方公告之完整申請須知檔案。'}</p>
+                    </div>
+                </div>
+            `;
+        } else if (tabName === 'timeline') {
+            let timelineHTML = `<div class="space-y-4">`;
+            if (item.timeline && item.timeline.length > 0) {
+                item.timeline.forEach(t => {
+                    timelineHTML += `
+                        <div class="flex items-start space-x-3 pb-4 border-b border-slate-100 last:border-0">
+                            <div class="bg-blue-50 text-blue-600 px-2.5 py-1 rounded text-xs font-bold font-mono">${t.date}</div>
+                            <div>
+                                <h5 class="font-bold text-slate-800 text-sm">${t.type}</h5>
+                                <p class="text-xs text-slate-600 mt-0.5">${t.desc}</p>
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                timelineHTML += `<p class="text-xs text-slate-400 text-center py-8">目前暫無詳細歷次公告時間軸紀錄。</p>`;
+            }
+            timelineHTML += `</div>`;
+            body.innerHTML = timelineHTML;
+        } else if (tabName === 'committee') {
+            let commHTML = `<div class="space-y-3">`;
+            if (item.committee && item.committee.length > 0) {
+                item.committee.forEach(c => {
+                    commHTML += `
+                        <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs">
+                            <div>
+                                <strong class="text-slate-900 font-bold text-sm">${c.name}</strong>
+                                <div class="text-slate-500 mt-0.5">${c.org}</div>
+                            </div>
+                            <span class="px-2.5 py-1 bg-purple-100 text-purple-700 font-semibold rounded">${c.title}</span>
+                        </div>
+                    `;
+                });
+            } else {
+                commHTML += `<p class="text-xs text-slate-400 text-center py-8">本案尚未進入評選會委員名單公告階段。</p>`;
+            }
+            commHTML += `</div>`;
+            body.innerHTML = commHTML;
+        } else if (tabName === 'news') {
+            let newsHTML = `
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-600">與本案相關之最新媒體報導與市場情報</span>
+                        <button onclick="openAddNewsPrompt('${item.caseId}')" class="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-medium hover:bg-blue-700 transition">
+                            <i class="fa-solid fa-plus mr-1"></i> 新增新聞筆記
+                        </button>
+                    </div>
+            `;
+            if (item.newsList && item.newsList.length > 0) {
+                item.newsList.forEach(n => {
+                    newsHTML += `
+                        <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+                            <div class="flex items-center justify-between text-xs">
+                                <span class="px-2 py-0.5 bg-blue-100 text-blue-700 font-bold rounded">${n.media}</span>
+                                <span class="text-slate-400">${n.date}</span>
+                            </div>
+                            <h5 class="font-bold text-slate-900 text-sm">${n.title}</h5>
+                            <p class="text-xs text-slate-600 leading-relaxed">${n.summary}</p>
+                            <a href="${n.url}" target="_blank" class="inline-flex items-center text-xs font-medium text-blue-600 hover:underline">
+                                閱讀完整報導 <i class="fa-solid fa-arrow-up-right-from-square ml-1 text-[10px]"></i>
+                            </a>
+                        </div>
+                    `;
+                });
+            } else {
+                newsHTML += `<p class="text-xs text-slate-400 text-center py-8">尚無關聯之媒體報導。</p>`;
+            }
+            newsHTML += `</div>`;
+            body.innerHTML = newsHTML;
         }
-      } catch (e) { showToast('同步失敗'); }
-    }
-    function exportToJSON() {
-      const blob = new Blob([JSON.stringify(tendersData, null, 2)], { type: 'application/json' });
-      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'backup.json'; a.click();
-    }
-    function importFromJSON(e) {
-      const f = e.target.files[0]; if (!f) return;
-      const r = new FileReader(); r.onload = ev => { tendersData = JSON.parse(ev.target.result); saveDataToStorage(); applyFilters(); showToast('還原成功'); };
-      r.readAsText(f);
-    }
-    function openGasArchitectureModal() { document.getElementById('gasModalBackdrop').classList.remove('hidden'); }
-    function closeGasArchitectureModal() { document.getElementById('gasModalBackdrop').classList.add('hidden'); }
-    function exportToCSV() {
-      let csv = '\uFEFF案號,縣市,行政區,別名,名稱,機關,階段\n';
-      tendersData.forEach(t => csv += `"${t.caseId}","${t.city}","${t.district}","${t.alias}","${t.title.replace(/"/g, '""')}","${t.agency}","${t.stage}"\n`);
-      const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = 'tenders.csv'; a.click();
     }
 
-    window.onload = function() {
-      document.getElementById('liveTodayDateText').textContent = formatLiveRocDateString();
-      loadDataFromStorage();
-      applyFilters();
-    };
-  </script>
-</body>
-</html>
+    // 雲端同步與 GAS 互動
+    async function syncFromCloudNow() {
+        const btn = document.getElementById('sync-btn');
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> 同步中...`;
+        btn.disabled = true;
+
+        const gasUrl = localStorage.getItem('UR_GAS_URL');
+        if (!gasUrl) {
+            alert('尚未綁定 Google Apps Script 網址！請先點擊「雲端自動爬蟲設定 (GAS)」完成綁定。');
+            btn.innerHTML = originalHTML;
+            btn.disabled = false;
+            return;
+        }
+
+        try {
+            const response = await fetch(gasUrl);
+            const cloudData = await response.json();
+            if (Array.isArray(cloudData) && cloudData.length > 0) {
+                tendersData = filterDuplicateTenders([...cloudData, ...tendersData]);
+                applyFilters();
+                alert(`成功從 Google 雲端同步 ${cloudData.length} 筆最新標案資料！`);
+            } else {
+                alert('雲端回傳資料為空，目前維持現有畫面。');
+            }
+        } catch(err) {
+            console.error(err);
+            alert('雲端連線同步失敗，請檢查 GAS 部署權限是否設為「所有人」或確認網址正確。');
+        } finally {
+            btn.innerHTML = originalHTML;
+            btn.disabled = false;
+        }
+    }
+
+    function openGasModal() { document.getElementById('gas-modal').classList.remove('hidden'); }
+    function closeGasModal() { document.getElementById('gas-modal').classList.add('hidden'); }
+    function saveGasUrl() {
+        const url = document.getElementById('gas-url-input').value.trim();
+        if (!url) { alert('請輸入有效的 Apps Script 網址'); return; }
+        localStorage.setItem('UR_GAS_URL', url);
+        alert('GAS 網址儲存成功！');
+        closeGasModal();
+        syncFromCloudNow();
+    }
+    function copyCodeSnippet() {
+        const textarea = document.getElementById('gas-code-textarea');
+        textarea.select();
+        document.execCommand('copy');
+        alert('完整 Code.gs 程式碼已複製到剪貼簿！');
+    }
+
+    // 手動新增標案 Modal
+    function openAddModal() { document.getElementById('add-modal').classList.remove('hidden'); }
+    function closeAddModal() { document.getElementById('add-modal').classList.add('hidden'); }
+    function saveNewTender() {
+        const caseId = document.getElementById('add-case-id').value.trim();
+        const city = document.getElementById('add-city').value;
+        const agency = document.getElementById('add-agency').value.trim();
+        const title = document.getElementById('add-title').value.trim();
+        const stage = document.getElementById('add-stage').value;
+        const deadline = document.getElementById('add-deadline').value;
+        const area = document.getElementById('add-area').value.trim();
+        const investment = document.getElementById('add-investment').value.trim();
+
+        if (!caseId || !title) { alert('請至少填寫標案案號與案件名稱！'); return; }
+
+        const newObj = {
+            caseId, city, agency: agency || '政府機關', title, stage, deadline,
+            area: area ? area + ' 坪' : '未登錄', investment: investment ? investment + ' 億元' : '未登錄',
+            method: '公辦都更', newsSummary: '手動新增之追蹤案件', newsCount: 0, newsList: [], timeline: [], committee: [], officialUrl: '#'
+        };
+
+        tendersData.unshift(newObj);
+        tendersData = filterDuplicateTenders(tendersData);
+        
+        let custom = JSON.parse(localStorage.getItem('UR_CUSTOM_TENDERS') || '[]');
+        custom.push(newObj);
+        localStorage.setItem('UR_CUSTOM_TENDERS', JSON.stringify(custom));
+
+        applyFilters();
+        closeAddModal();
+        alert('新標案已成功加入戰情室！');
+    }
+
+    function openAddNewsPrompt(caseId) {
+        const title = prompt('請輸入新聞標題：');
+        if (!title) return;
+        const media = prompt('請輸入發布媒體 (例如: 經濟日報)：', '財經日報');
+        const summary = prompt('請輸入新聞重點摘要：', '近期招商反應熱烈...');
+        const item = tendersData.find(i => i.caseId === caseId);
+        if (item) {
+            if (!item.newsList) item.newsList = [];
+            item.newsList.unshift({ date: new Date().toISOString().split('T')[0].replace(/-/g, '/'), media: media || '媒體', title, summary, url: '#' });
+            item.newsSummary = `[${media}] ${title}`;
+            item.newsCount = (item.newsCount || 0) + 1;
+            openDetailDrawer(caseId);
+            applyFilters();
+            alert('新聞筆記已成功新增！');
+        }
+    }
+
+    // 匯出 / 匯入 JSON
+    function exportJSON() {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(tendersData, null, 2));
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", `urban_renewal_dashboard_${new Date().toISOString().split('T')[0]}.json`);
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+    }
+
+    function importJSON(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const imported = JSON.parse(e.target.result);
+                if (Array.isArray(imported)) {
+                    tendersData = filterDuplicateTenders([...imported, ...tendersData]);
+                    applyFilters();
+                    alert(`成功匯入 ${imported.length} 筆資料！`);
+                }
+            } catch(err) {
+                alert('匯入失敗：JSON 格式錯誤');
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    function toggleStar(e, caseId) {
+        e.stopPropagation();
+        const btn = e.currentTarget;
+        btn.classList.toggle('text-amber-500');
+        btn.classList.toggle('text-slate-300');
+    }
+</script>
